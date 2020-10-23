@@ -10,8 +10,8 @@ const (
     West  Direction = 'W'
 )
 
-// Point représente une coordonnée ou direction/vecteur tridimensionnelle
-type Point struct {
+// Vector représente une coordonnée ou direction/vecteur tridimensionnelle
+type Vector struct {
     X float64 `csv:"x"`
     Y float64 `csv:"y"`
     Z float64 `csv:"z"`
@@ -67,13 +67,13 @@ type RocketPacket struct {
     Temperature float64 `csv:"temperature"`
     
     // Acceleration est la force gravitationnelle subit en g
-    Acceleration Point `csv:"acceleration_,inline"`
+    Acceleration Vector `csv:"acceleration_,inline"`
     
     // Magnetism en millitesla (mT)
-    Magnetism Point `csv:"magnetometer_,inline"`
+    Magnetism Vector `csv:"magnetometer_,inline"`
     
     // AngularSpeed est la vitesse angulaire en radian par seconde
-    AngularSpeed Point `csv:"angular_speed_,inline"`
+    AngularSpeed Vector `csv:"angular_speed_,inline"`
     
     // States est l'état des systèmes
     States SystemStates

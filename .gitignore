@@ -38,3 +38,9 @@
 # Env files
 .env*
 !.env.example
+
+# Others
+temp.go
+
+
+bin/

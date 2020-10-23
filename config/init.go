@@ -2,22 +2,17 @@ package config
 
 import (
     "github.com/spf13/viper"
-    "log"
     "os"
     "path/filepath"
+    
+    "github.com/ul-gaul/go-basestation/utils"
 )
-
-func checkErr(err error) {
-    if err != nil {
-        log.Panicln(err)
-    }
-}
 
 func getExecutablePath() string {
     exe, err := os.Executable()
     if err != nil {
         exe, err = filepath.EvalSymlinks(exe)
-        checkErr(err)
+        utils.CheckErr(err)
     }
     return filepath.Dir(exe)
 }
@@ -33,6 +28,6 @@ func init() {
     
     applyDefaults()
     
-    checkErr(viper.ReadInConfig())
-    checkErr(viper.UnmarshalKey("comms", &Comms))
+    utils.CheckErr(viper.ReadInConfig())
+    utils.CheckErr(viper.UnmarshalKey("comms", &Comms))
 }
