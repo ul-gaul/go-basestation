@@ -12,9 +12,9 @@ const (
 
 // Vector représente une coordonnée ou direction/vecteur tridimensionnelle
 type Vector struct {
-    X float64 `csv:"x"`
-    Y float64 `csv:"y"`
-    Z float64 `csv:"z"`
+    X int16 `csv:"x"`
+    Y int16 `csv:"y"`
+    Z int16 `csv:"z"`
 }
 
 // State représente un état (actif/inactif)
@@ -39,7 +39,7 @@ type SystemStates struct {
 //
 // NOTE: Les champs doivent être dans la même ordre que les données reçues
 type RocketPacket struct {
-    // Time est le temps écoulé en millisecondes (ms) depuis le démarrage ?? FIXME
+    // Time est le temps écoulé en millisecondes (ms) depuis le démarrage
     Time uint64 `csv:"time_stamp"`
     
     // Latitude GPS en degrés
@@ -58,13 +58,13 @@ type RocketPacket struct {
     GpsSatellites uint8 `csv:"gps_satellites"`
     
     // Altitude en mètre (m)
-    Altitude float64 `csv:"altitude"`
+    Altitude float32 `csv:"altitude"`
     
     // Pressure est la pression en Pascal (p)
-    Pressure float64 `csv:"pressure"`
+    Pressure uint32 `csv:"pressure"`
     
     // Temperature en degrés Celsius (°C)
-    Temperature float64 `csv:"temperature"`
+    Temperature float32 `csv:"temperature"`
     
     // Acceleration est la force gravitationnelle subit en g
     Acceleration Vector `csv:"acceleration_,inline"`
@@ -77,4 +77,6 @@ type RocketPacket struct {
     
     // States est l'état des systèmes
     States SystemStates
+    
+    // TODO Manometers + piezoelectric
 }
