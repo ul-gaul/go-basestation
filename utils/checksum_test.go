@@ -12,7 +12,7 @@ type TestData struct {
 }
 
 var tests = []TestData{
-    // CRCs obtenu sur https://crccalc.com/
+    // CRCs obtenus sur https://crccalc.com/
     { []byte("abcdef_xyz"), 0xB918 },
     { []byte{ 0x00 }, 0xE1F0 },
     { []byte{ 0x00, 0x00, 0x00, 0x00 }, 0x84C0 },
