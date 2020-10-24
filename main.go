@@ -11,14 +11,8 @@ import (
 func main() {
     defer ants.Release()
     
-    const useFyne = false
-    
-    if useFyne {
-        ui.RunFyne()
-    } else {
-        if err := ants.Submit(ui.RunGioui); err != nil {
-            log.Panicln(err)
-        }
-        app.Main()
+    if err := ants.Submit(ui.RunGioui); err != nil {
+        log.Panicln(err)
     }
+    app.Main()
 }
