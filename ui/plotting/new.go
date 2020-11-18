@@ -20,7 +20,10 @@ func NewPlotter(opts ...Option) (p *Plotter, err error) {
         opt(&cfg)
     }
     
-    p = &Plotter{name: cfg.name}
+    p = &Plotter{
+        name: cfg.name,
+        chChange: make(chan bool),
+    }
     p.line, p.points, err = plotter.NewLinePoints(new(plotter.XYs))
     if err != nil {
         return nil, err

@@ -6,11 +6,17 @@ import (
 )
 
 var Comms struct {
-    AcknowledgeTimeout time.Duration `mapstructure:"acknowledge.timeout"`
-    Serial             struct {
-        BaudRate        int `mapstructure:"baudrate"`
-        DataBits        int `mapstructure:"databits"`
-        serial.Parity   `mapstructure:"parity"`
-        serial.StopBits `mapstructure:"stopbits"`
-    } `mapstructure:"serial"`
+    
+    Acknowledge struct {
+        Timeout time.Duration
+        LossThreshold uint
+        BufferSize uint
+    }
+    
+    RocketPacket struct {
+        LossThreshold uint
+        BufferSize uint
+    }
+    
+    Serial serial.Mode
 }

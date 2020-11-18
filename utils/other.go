@@ -1,7 +1,7 @@
 package utils
 
 import (
-    "log"
+    log "github.com/sirupsen/logrus"
 )
 
 // CheckErr log l'erreur et panic si err n'est pas nil.

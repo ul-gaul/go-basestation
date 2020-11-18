@@ -2,17 +2,25 @@ package main
 
 import (
     "gioui.org/app"
-    "github.com/panjf2000/ants/v2"
+    log "github.com/sirupsen/logrus"
+    "os"
+    
     _ "github.com/ul-gaul/go-basestation/config"
+    "github.com/ul-gaul/go-basestation/pool"
     "github.com/ul-gaul/go-basestation/ui"
-    "log"
 )
 
+func init() {
+    log.SetOutput(os.Stderr)
+    log.SetLevel(log.DebugLevel)
+}
+
 func main() {
-    defer ants.Release()
+    defer pool.Release()
     
-    if err := ants.Submit(ui.RunGioui); err != nil {
+    if err := pool.Frontend.Submit(ui.RunGioui); err != nil {
         log.Panicln(err)
     }
+    app.Title("Gaul - Base Station")
     app.Main()
 }
