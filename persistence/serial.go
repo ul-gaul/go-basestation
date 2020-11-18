@@ -4,14 +4,15 @@ import (
     "encoding/binary"
     "errors"
     "github.com/panjf2000/ants/v2"
+    log "github.com/sirupsen/logrus"
+    "go.bug.st/serial"
+    "sync"
+    "time"
+    
     . "github.com/ul-gaul/go-basestation/config"
     "github.com/ul-gaul/go-basestation/constants"
     "github.com/ul-gaul/go-basestation/packet"
     "github.com/ul-gaul/go-basestation/utils"
-    "go.bug.st/serial"
-    "log"
-    "sync"
-    "time"
 )
 
 type ISerialPacketParser interface {
@@ -55,24 +56,16 @@ func NewSerialPacketCommunicator(port string, parser ISerialPacketParser) ISeria
     return &serialPacketCommunicator{
         parser:  parser,
         strPort: port,
-        chAcknowledge: make(chan packet.AcknowledgePacket),
-        chRocketPacket: make(chan packet.RocketPacket),
+        chAcknowledge: make(chan packet.AcknowledgePacket, Comms.Acknowledge.BufferSize),
+        chRocketPacket: make(chan packet.RocketPacket, Comms.RocketPacket.BufferSize),
         chError: make(chan error),
     }
 }
 
-func (s *serialPacketCommunicator) Start() error {
-    var err error
-    mode := serial.Mode{
-        Comms.Serial.BaudRate,
-        Comms.Serial.DataBits,
-        Comms.Serial.Parity,
-        Comms.Serial.StopBits,
-    }
-    
+func (s *serialPacketCommunicator) Start() (err error) {
     if s.Port != nil {
         err = constants.ErrCommunicatorAlreadyStarted
-    } else if s.Port, err = serial.Open(s.strPort, &mode); err == nil {
+    } else if s.Port, err = serial.Open(s.strPort, &Comms.Serial); err == nil {
         err = ants.Submit(s.run)
         if err != nil {
             log.Panicln(err)
@@ -87,6 +80,7 @@ func (s *serialPacketCommunicator) run() {
     var responseType uint16
     var pkt packet.RocketPacket
     var ack packet.AcknowledgePacket
+    var pktLost, ackLost uint
     start := make([]byte, constants.StartDelimSize)
     
     for ; err == nil; _, err = s.Port.Read(start) {
@@ -95,14 +89,34 @@ func (s *serialPacketCommunicator) run() {
         switch responseType {
         case constants.RocketPacketStart:
             if pkt, err = s.readRocketPacket(); err == nil {
-                s.chRocketPacket <- pkt
+                select {
+                case s.chRocketPacket <- pkt:
+                    pktLost = 0
+                default:
+                    pktLost++
+                    if pktLost > Comms.RocketPacket.LossThreshold {
+                        log.Panicln(constants.ErrLostTooManyRocketPacket)
+                    } else {
+                        log.Warnln("Packet lost -> RocketPacket")
+                    }
+                }
             }
         case constants.AcknowledgeStart:
             if ack, err = s.readAcknowledge(); err == nil {
-                s.chAcknowledge <- ack
+                select {
+                case s.chAcknowledge <- ack:
+                    ackLost = 0
+                default:
+                    ackLost++
+                    if ackLost > Comms.Acknowledge.LossThreshold {
+                        log.Panicln(constants.ErrLostTooManyAcknowledge)
+                    } else {
+                        log.Warnln("Packet lost -> Acknowledge")
+                    }
+                }
             }
         default:
-            log.Printf("Unknown start: %x\n", responseType)
+            log.Warnf("Unknown start: %x\n", responseType)
         }
     }
     
@@ -159,7 +173,7 @@ func (s *serialPacketCommunicator) SendCommand(fnc packet.CmdFunction, arg packe
     
     _, err = s.Write(packet.CommandPacket{Id: id, Function: fnc, Argument: arg }.ToBytes())
     
-    for timeout := time.After(Comms.AcknowledgeTimeout); ack.Id != id && err == nil; {
+    for timeout := time.After(Comms.Acknowledge.Timeout); ack.Id != id && err == nil; {
         select {
         case ack = <- s.chAcknowledge:
             if ack.Ack != packet.AckSuccess {

@@ -1,10 +1,26 @@
 
-comms:
-  # Temps maximum d'attente du acknowledge des commandes (Voir time.parseDuration)
-  acknowledge.timeout: 30s
-  serial:
-    baudrate: 115200
-    databits: 8
+# Paramètres reliés aux communications
+Comms:
+
+  Acknowledge:
+    # Temps maximum d'attente du acknowledge des commandes (Voir time.parseDuration)
+    Timeout: 30s
+    # Limite de paquets Acknowledge consecutifs perdus (panic si atteint)
+    LossThreshold: 20
+    # La capacité du buffer du channel de réception des paquets Acknowledge
+    BufferSize: 5
+
+
+  RocketPacket:
+    # Limite de paquets RocketPacket consecutifs perdus (panic si atteint)
+    LossThreshold: 20
+    # La capacité du buffer du channel de réception des paquets RocketPacket
+    BufferSize: 5
+
+
+  Serial:
+    BaudRate: 115200
+    DataBits: 8
 
     # Valeurs possibles:
     #   0 - serial.NoParity (default)
@@ -12,10 +28,10 @@ comms:
     #   2 - serial.EvenParity
     #   3 - serial.MarkParity
     #   4 - serial.SpaceParity
-    parity: 0
+    Parity: 0
 
     # Valeurs possibles:
     #   0 - serial.OneStopBit (default)
     #   1 - serial.OnePointFiveStopBits
     #   2 - serial.TwoStopBits
-    stopbits: 0
+    StopBits: 0

@@ -3,9 +3,10 @@ package persistence
 import (
     "encoding/csv"
     "github.com/jszwec/csvutil"
-    "github.com/ul-gaul/go-basestation/packet"
+    log "github.com/sirupsen/logrus"
     "io"
-    "log"
+    
+    "github.com/ul-gaul/go-basestation/packet"
 )
 
 type CsvPacketReader struct {

@@ -9,4 +9,6 @@ var (
     ErrInvalidChecksum = errors.New("invalid packet checksum")
     ErrAcknowledgeTimeout = errors.New("") // FIXME
     ErrAcknowledgeFail = errors.New("") // FIXME
+    ErrLostTooManyRocketPacket = errors.New("lost too many RocketPacket packets")
+    ErrLostTooManyAcknowledge = errors.New("lost too many Acknowledge packets")
 )

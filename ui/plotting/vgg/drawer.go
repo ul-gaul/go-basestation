@@ -14,6 +14,7 @@ type Drawer struct {
     opts   []option
     redraw bool
     firstRun bool
+    // TODO MinWidth, MinHeight, MaxWidth, MaxHeight
 }
 
 func New(opts ...option) *Drawer {
@@ -55,10 +56,12 @@ func (d *Drawer) Layout(gtx layout.Context, chart *plot.Plot) layout.Dimensions 
     if d.firstRun || !d.isSameSize(gtx, gtx.Constraints.Min, gtx.Constraints.Max) {
         w := d.toLength(gtx, gtx.Constraints.Max.X) - d.toLength(gtx, gtx.Constraints.Min.X)
         h := d.toLength(gtx, gtx.Constraints.Max.Y) - d.toLength(gtx, gtx.Constraints.Min.Y)
-        d.canvas = NewCanvas(append([]option{UseWH(w, h)}, d.opts...)...)
-        d.drawer = draw.New(d.canvas)
-        d.firstRun = false
-        d.redraw = true
+        if w > 0 && h > 0 { // TODO Set to MinWidth & MinHeight
+            d.canvas = NewCanvas(append([]option{UseWH(w, h)}, d.opts...)...)
+            d.drawer = draw.New(d.canvas)
+            d.firstRun = false
+            d.redraw = true
+        }
     }
     
     if d.redraw {

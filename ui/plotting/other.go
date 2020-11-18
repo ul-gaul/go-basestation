@@ -35,6 +35,6 @@ func NewChartUpdater(win *app.Window, drawer *vgg.Drawer, chart *plot.Plot) Char
     return func() {
         RecalcAxis(chart)
         drawer.Redraw()
-        win.Invalidate()
+        // win.Invalidate()
     }
 }

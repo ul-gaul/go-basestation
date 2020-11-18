@@ -1,6 +1,7 @@
 package vgg
 
 import (
+    log "github.com/sirupsen/logrus"
     "image"
     "image/color"
     
@@ -56,7 +57,7 @@ type option func(*config)
 // The size is rounded up to the nearest pixel.
 func UseWH(w, h vg.Length) option {
     if w <= 0 || h <= 0 {
-        panic("w and h must both be > 0.")
+        log.Panicln("w and h must both be > 0.")
     }
     return func(c *config) {
         c.w = w
@@ -68,7 +69,7 @@ func UseWH(w, h vg.Length) option {
 // used as an option argument when initializing a new canvas.
 func UseDPI(dpi int) option {
     if dpi <= 0 {
-        panic("DPI must be > 0.")
+        log.Panicln("DPI must be > 0.")
     }
     return func(c *config) {
         c.dpi = dpi
