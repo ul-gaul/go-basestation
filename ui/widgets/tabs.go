@@ -3,6 +3,7 @@ package widgets
 import (
     "gioui.org/f32"
     "gioui.org/layout"
+    "gioui.org/op/clip"
     "gioui.org/op/paint"
     "gioui.org/unit"
     "gioui.org/widget"
@@ -81,14 +82,15 @@ func DefaultTabButton(gtx layout.Context, th *material.Theme, title string, isCu
             if !isCurrent {
                 return layout.Dimensions{}
             }
-            paint.ColorOp{Color: th.Color.Primary}.Add(gtx.Ops)
+            paint.ColorOp{Color: th.Fg}.Add(gtx.Ops)
             tabHeight := gtx.Px(unit.Dp(4))
-            paint.PaintOp{Rect: f32.Rectangle{
+            clip.UniformRRect(f32.Rectangle{
                 Max: f32.Point{
                     X: float32(tabWidth),
                     Y: float32(tabHeight),
                 },
-            }}.Add(gtx.Ops)
+            }, 5).Add(gtx.Ops)
+            paint.PaintOp{}.Add(gtx.Ops)
             return layout.Dimensions{
                 Size: image.Point{X: tabWidth, Y: tabHeight},
             }

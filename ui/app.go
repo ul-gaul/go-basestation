@@ -64,7 +64,7 @@ func loop() error {
         widgets.Tabbed("General", generalTab.Layout),
         widgets.Tabbed("Motor", func(gtx layout.Context) layout.Dimensions {
             return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-                return layout.UniformInset(unit.Sp(10)).Layout(gtx, drawer.Layout)
+                return layout.UniformInset(unit.Px(10)).Layout(gtx, drawer.Layout)
             })
         }),
     }
@@ -73,8 +73,14 @@ func loop() error {
     ops := new(op.Ops)
     tabBar := widgets.Tab(th)
     
-    ticker := time.NewTicker(time.Second / 10)
+    ticker := time.NewTicker(150 * time.Millisecond)
     defer ticker.Stop()
+    go func() {
+        for range ticker.C {
+            addRandomPoints(plter, 1)
+            log.Infof("Points: %d", plter.Data().Len())
+        }
+    }()
     
     for {
         select {
@@ -87,9 +93,9 @@ func loop() error {
                 tabBar.Layout(gtx, tabs...)
                 e.Frame(gtx.Ops)
             }
-        case <-ticker.C:
-            addRandomPoints(plter, 1)
-            log.Infof("Points: %d", plter.Data().Len())
+        // case <-ticker.C:
+        //     addRandomPoints(plter, 1)
+        //     log.Infof("Points: %d", plter.Data().Len())
         }
     }
 }

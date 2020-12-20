@@ -8,6 +8,7 @@ import (
     "github.com/ul-gaul/go-basestation/utils"
 )
 
+const marginRatio = 0.05
 func RecalcAxis(chart *plot.Plot) {
     v := reflect.Indirect(reflect.ValueOf(chart)).FieldByName("plotters")
     plotters := utils.GetUnexportedField(v).([]plot.Plotter)
@@ -23,6 +24,7 @@ func RecalcAxis(chart *plot.Plot) {
         }
     }
     
-    chart.X.Min, chart.X.Max = xmin, xmax
-    chart.Y.Min, chart.Y.Max = ymin, ymax
+    marginX, marginY := marginRatio * (xmax - xmin), marginRatio * (ymax - ymin)
+    chart.X.Min, chart.X.Max = xmin - marginX, xmax + marginX
+    chart.Y.Min, chart.Y.Max = ymin - marginY, ymax + marginY
 }
