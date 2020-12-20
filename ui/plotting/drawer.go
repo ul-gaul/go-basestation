@@ -1,9 +1,9 @@
 package plotting
 
 import (
-    "gioui.org/f32"
     "gioui.org/layout"
     "gioui.org/op"
+    "gioui.org/op/clip"
     "gioui.org/op/paint"
     "gonum.org/v1/plot"
     "gonum.org/v1/plot/vg"
@@ -53,6 +53,8 @@ func NewPlotDrawer() (*PlotDrawer, error) {
     
     d.chart.X.Tick.Marker = ticker.Ticks{}
     d.chart.Y.Tick.Marker = ticker.Ticks{}
+    d.chart.X.Padding = 0
+    d.chart.Y.Padding = 0
     
     d.canvas = vgimg.New(DefaultWidth, DefaultHeight)
     d.dpi = d.canvas.DPI()
@@ -91,15 +93,14 @@ func (d *PlotDrawer) AddPlotter(p *Plotter) error {
 
 // Layout renders the plot.Plot to the provided layout.Context
 func (d *PlotDrawer) Layout(gtx layout.Context) layout.Dimensions {
-    r32 := f32.Rect(
-        float32(gtx.Constraints.Min.X),
-        float32(gtx.Constraints.Min.Y),
-        float32(gtx.Constraints.Max.X),
-        float32(gtx.Constraints.Max.Y))
+    rect := image.Rect(
+        0, 0,
+        gtx.Constraints.Max.X,
+        gtx.Constraints.Max.Y)
     
     // 1 dp = 160 dpi
     dpi := float64(gtx.Metric.PxPerDp) * 160
-    w, h := float64(r32.Dx()), float64(r32.Dy())
+    w, h := float64(rect.Dx()), float64(rect.Dy())
     if (dpi > 0 && w > 0 && h > 0) && (dpi != d.dpi || w != d.w || h != d.h) {
         d.mut.Lock()
         d.dpi, d.w, d.h = dpi, w, h
@@ -114,11 +115,12 @@ func (d *PlotDrawer) Layout(gtx layout.Context) layout.Dimensions {
     macro := op.Record(gtx.Ops)
     op.InvalidateOp{}.Add(gtx.Ops)
     paint.NewImageOp(img).Add(gtx.Ops)
-    paint.PaintOp{Rect: r32}.Add(gtx.Ops)
+    clip.Rect(rect).Add(gtx.Ops)
+    paint.PaintOp{}.Add(gtx.Ops)
     macro.Stop().Add(gtx.Ops)
     
     return layout.Dimensions{
-        Size: image.Pt(int(r32.Max.X), int(r32.Max.Y)),
+        Size: image.Pt(rect.Max.X, rect.Max.Y),
     }
 }
 

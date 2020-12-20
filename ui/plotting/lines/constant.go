@@ -12,7 +12,7 @@ var _ plot.Plotter = (*ConstantLine)(nil)
 // DefaultConstantLineStyle is the default style for origin lines.
 var DefaultConstantLineStyle = draw.LineStyle{
     Color: color.RGBA{0x33, 0x33, 0x33, 0x10},
-    Width: vg.Points(0.25),
+    Width: vg.Points(1),
 }
 
 type Orientation uint8
