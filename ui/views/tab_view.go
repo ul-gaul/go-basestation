@@ -1,10 +1,7 @@
 package views
 
 import (
-    "gonum.org/v1/plot"
-    
     "github.com/ul-gaul/go-basestation/ui/plotting"
-    "github.com/ul-gaul/go-basestation/ui/plotting/vgg"
 )
 
 type PlotId uint8
@@ -18,6 +15,5 @@ const (
 
 type TabView interface {
     Plotters() map[PlotId]*plotting.Plotter
-    Drawers() map[PlotId]*vgg.Drawer
-    Charts() map[PlotId]*plot.Plot
+    Drawers() map[PlotId]*plotting.PlotDrawer
 }

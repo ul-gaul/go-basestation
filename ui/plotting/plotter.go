@@ -5,6 +5,7 @@ import (
     "gonum.org/v1/plot/plotter"
     "gonum.org/v1/plot/vg/draw"
     "math"
+    "time"
     
     "github.com/ul-gaul/go-basestation/utils"
 )
@@ -18,12 +19,11 @@ type Plotter struct {
     points                 *plotter.Scatter
     xys                    plotter.XYs
     xmin, xmax, ymin, ymax float64
-    chChange               chan bool
+    chChange               chan time.Time
 }
 
-func (p *Plotter) ChangeChannel() <-chan bool { return p.chChange }
-func (p *Plotter) Name() string               { return p.name }
-func (p *Plotter) Data() plotter.XYs          { return p.xys }
+func (p *Plotter) Name() string      { return p.name }
+func (p *Plotter) Data() plotter.XYs { return p.xys }
 
 func (p *Plotter) DataRange() (xmin, xmax, ymin, ymax float64) {
     return p.xmin, p.xmax, p.ymin, p.ymax
@@ -59,18 +59,12 @@ func (p *Plotter) setXYs(xys plotter.XYs) {
     p.points.XYs = xys
     
     select {
-    case p.chChange <- true:
+    case p.chChange <- time.Now():
     default:
     }
 }
 
-func (p *Plotter) ApplyTo(chart *plot.Plot) {
-    chart.Add(p)
-    if p.name != "" {
-        chart.Legend.Add(p.name, p.line, p.points)
-    }
-}
-
+// Plot implements the plot.Plotter interface
 func (p *Plotter) Plot(c draw.Canvas, plt *plot.Plot) {
     p.line.Plot(c, plt)
     p.points.Plot(c, plt)
@@ -81,7 +75,6 @@ func (p *Plotter) Plot(c draw.Canvas, plt *plot.Plot) {
 func (p *Plotter) LineStyle() draw.LineStyle                 { return p.line.LineStyle }
 func (p *Plotter) PointStyle() draw.GlyphStyle               { return p.points.GlyphStyle }
 func (p *Plotter) PointStyleFunc() func(int) draw.GlyphStyle { return p.points.GlyphStyleFunc }
-
 func (p *Plotter) SetPointStyleFunc(fnc func(int) draw.GlyphStyle) {
     p.points.GlyphStyleFunc = fnc
 }

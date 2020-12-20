@@ -1,12 +1,10 @@
 package plotting
 
 import (
-    "gioui.org/app"
     "gonum.org/v1/plot"
     "math"
     "reflect"
     
-    "github.com/ul-gaul/go-basestation/ui/plotting/vgg"
     "github.com/ul-gaul/go-basestation/utils"
 )
 
@@ -27,14 +25,4 @@ func RecalcAxis(chart *plot.Plot) {
     
     chart.X.Min, chart.X.Max = xmin, xmax
     chart.Y.Min, chart.Y.Max = ymin, ymax
-}
-
-type ChartUpdater func()
-
-func NewChartUpdater(win *app.Window, drawer *vgg.Drawer, chart *plot.Plot) ChartUpdater {
-    return func() {
-        RecalcAxis(chart)
-        drawer.Redraw()
-        // win.Invalidate()
-    }
 }
