@@ -12,3 +12,9 @@ var (
     ErrLostTooManyRocketPacket = errors.New("lost too many RocketPacket packets")
     ErrLostTooManyAcknowledge = errors.New("lost too many Acknowledge packets")
 )
+
+
+/** UI Errors ***/
+var (
+    ErrPaddingOutOfRange = errors.New("padding ratio must be between -1 and 1")
+)

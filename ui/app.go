@@ -10,6 +10,7 @@ import (
     
     "github.com/ul-gaul/go-basestation/ui/plotting"
     "github.com/ul-gaul/go-basestation/ui/plotting/lines"
+    ticker2 "github.com/ul-gaul/go-basestation/ui/plotting/ticker"
     "github.com/ul-gaul/go-basestation/ui/views"
     "github.com/ul-gaul/go-basestation/ui/widgets"
     "github.com/ul-gaul/go-basestation/utils"
@@ -50,6 +51,7 @@ func loop() error {
     utils.CheckErr(err)
     drawer.Chart().Add(lines.NewOriginLines())
     drawer.Chart().Add(plotter.NewGrid())
+    drawer.Chart().X.Tick.Marker = ticker2.NewTicker(10, ticker2.ContainData)
     
     plter, err := plotting.NewPlotter(
         plotting.WithStyleIdx(0),
