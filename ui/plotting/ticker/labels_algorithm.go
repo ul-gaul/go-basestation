@@ -15,15 +15,17 @@ const (
     dlamchP = dlamchB * dlamchE
 )
 
+type Containment int
 const (
+    _ Containment = iota
     // free indicates no restriction on label containment.
-    free = iota
+    Free
     // containData specifies that all the data range lies
     // within the interval [label_min, label_max].
-    containData
+    ContainData
     // withinData specifies that all labels lie within the
     // interval [dMin, dMax].
-    withinData
+    WithinData
 )
 
 // talbotLinHanrahan returns an optimal set of approximately want label values
@@ -37,7 +39,7 @@ const (
 // By default, when nil, legbility will set the legibility score for each candidate
 // labelling scheme to 1.
 // See the paper for an explanation of the function of Q, w and legibility.
-func talbotLinHanrahan(dMin, dMax float64, want int, containment int, Q []float64, w *weights, legibility func(lMin, lMax, lStep float64) float64) (values []float64, step, q float64, magnitude int) {
+func talbotLinHanrahan(dMin, dMax float64, want int, containment Containment, Q []float64, w *weights, legibility func(lMin, lMax, lStep float64) float64) (values []float64, step, q float64, magnitude int) {
     const eps = dlamchP * 100
     
     if dMin > dMax {
@@ -119,15 +121,15 @@ outer:
                         lMax := lMin + kStep
                         
                         switch containment {
-                        case containData:
+                        case ContainData:
                             if dMin < lMin || lMax < dMax {
                                 continue
                             }
-                        case withinData:
+                        case WithinData:
                             if lMin < dMin || dMax < lMax {
                                 continue
                             }
-                        case free:
+                        case Free:
                             // Free choice.
                         }
                         

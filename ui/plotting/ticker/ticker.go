@@ -6,21 +6,41 @@ import (
     "strconv"
 )
 
+const (
+    DefaultSuggestedTicks = 5
+    DefaultContainment = WithinData
+)
+
 // Ticks is suitable for the Tick.Marker field of an Axis,
 // it returns a reasonable default set of tick marks.
-type Ticks struct{}
+type Ticks struct{
+    suggestedTicks int
+    containment Containment
+}
 
+// var _ Ticker = (Ticks)(nil)
 var _ Ticker = Ticks{}
 
+func NewTicker(suggestedTicks int, containment Containment) Ticker {
+    suggestedTicks = maxInt(0, suggestedTicks)
+    if suggestedTicks == 0 {
+        suggestedTicks = DefaultSuggestedTicks
+    }
+    
+    if containment != Free && containment != ContainData && containment != WithinData {
+        containment = DefaultContainment
+    }
+    
+    return Ticks{suggestedTicks, containment}
+}
+
 // Ticks returns Ticks in the specified range.
-func (Ticks) Ticks(min, max float64) []Tick {
+func (t Ticks) Ticks(min, max float64) []Tick {
     if max <= min {
         panic("illegal range")
     }
     
-    const suggestedTicks = 10
-    
-    labels, step, q, mag := talbotLinHanrahan(min, max, suggestedTicks, containData, nil, nil, nil)
+    labels, step, q, mag := talbotLinHanrahan(min, max, t.suggestedTicks, t.containment, nil, nil, nil)
     majorDelta := step * math.Pow10(mag)
     if q == 0 {
         // Simple fall back was chosen, so
