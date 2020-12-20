@@ -6,6 +6,7 @@ import (
     "gonum.org/v1/plot/vg"
     "gonum.org/v1/plot/vg/draw"
     "image/color"
+    "time"
 )
 
 // TODO Documentation
@@ -22,7 +23,7 @@ func NewPlotter(opts ...Option) (p *Plotter, err error) {
     
     p = &Plotter{
         name: cfg.name,
-        chChange: make(chan bool),
+        chChange: make(chan time.Time),
     }
     p.line, p.points, err = plotter.NewLinePoints(new(plotter.XYs))
     if err != nil {
