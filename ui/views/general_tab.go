@@ -41,11 +41,11 @@ func NewGeneralTab() (g *GeneralTab, err error) {
 }
 
 type GeneralTab struct {
-    plotters    map[PlotId]*plotting.Plotter
-    drawers     map[PlotId]*plotting.PlotDrawer
+    plotters map[PlotId]*plotting.Plotter
+    drawers  map[PlotId]*plotting.PlotDrawer
 }
 
-func (g *GeneralTab) Plotters() map[PlotId]*plotting.Plotter { return g.plotters }
+func (g *GeneralTab) Plotters() map[PlotId]*plotting.Plotter   { return g.plotters }
 func (g *GeneralTab) Drawers() map[PlotId]*plotting.PlotDrawer { return g.drawers }
 
 func createPlot(title, xAxis, yAxis string) (plt *plotting.Plotter, drawer *plotting.PlotDrawer, err error) {
@@ -71,14 +71,14 @@ func createPlot(title, xAxis, yAxis string) (plt *plotting.Plotter, drawer *plot
 
 func (g *GeneralTab) Layout(gtx layout.Context) layout.Dimensions {
     flexedChart := func(id PlotId) layout.FlexChild {
-        return layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-            return layout.UniformInset(unit.Sp(10)).Layout(gtx, g.drawers[id].Layout)
+        return layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+            return layout.UniformInset(unit.Px(10)).Layout(gtx, g.drawers[id].Layout)
         })
     }
     
-    return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+    return layout.Flex{}.Layout(gtx,
         // Column 1
-        layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+        layout.Flexed(0.5, func(gtx layout.Context) layout.Dimensions {
             return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
                 // Col 1, Row 1
                 flexedChart(PltAltitude),
@@ -86,9 +86,9 @@ func (g *GeneralTab) Layout(gtx layout.Context) layout.Dimensions {
                 flexedChart(PltCoords),
             )
         }),
-        
+    
         // Column 2
-        layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+        layout.Flexed(0.5, func(gtx layout.Context) layout.Dimensions {
             return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
                 // Col 2, Row 1
                 flexedChart(PltTemperature),
@@ -98,3 +98,7 @@ func (g *GeneralTab) Layout(gtx layout.Context) layout.Dimensions {
         }),
     )
 }
+
+/*
+
+ */
