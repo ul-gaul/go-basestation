@@ -5,8 +5,9 @@ import (
     "github.com/jszwec/csvutil"
     log "github.com/sirupsen/logrus"
     "io"
+    "os"
     
-    "github.com/ul-gaul/go-basestation/packet"
+    "github.com/ul-gaul/go-basestation/data/packet"
 )
 
 type CsvPacketReader struct {
@@ -31,6 +32,12 @@ func (cr *CsvPacketReader) ReadAll() ([]packet.RocketPacket, error) {
     var packets []packet.RocketPacket
     err := cr.Decode(&packets)
     return packets, err
+}
+
+func ReadCsv(csvPath string) ([]packet.RocketPacket, error) {
+    file, err := os.Open(csvPath)
+    if err != nil { return nil, err }
+    return NewCsvPacketReader(file).ReadAll()
 }
 
 /********************************* CSV Writer *********************************/

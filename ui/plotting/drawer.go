@@ -21,10 +21,10 @@ import (
 )
 
 const (
-    DefaultWidth vg.Length = 600
+    DefaultWidth  vg.Length = 600
     DefaultHeight vg.Length = 400
     
-    DefaultPadding = 0.05
+    DefaultPadding = 0.03
 )
 
 type PlotDrawer struct {
@@ -36,11 +36,11 @@ type PlotDrawer struct {
     img draw2.Image
     
     w, h float64
-    dpi float64
+    dpi  float64
     
     mut         sync.RWMutex
     initialized bool
-    chDraw      chan time.Time
+    chDraw      chan struct{}
     
     paddingX, paddingY float64
 }
@@ -50,7 +50,7 @@ func NewPlotDrawer() (*PlotDrawer, error) {
     var err error
     d := &PlotDrawer{
         plotters: make(map[*Plotter]time.Time),
-        chDraw:   make(chan time.Time),
+        chDraw:   make(chan struct{}, 1),
         paddingX: DefaultPadding,
         paddingY: DefaultPadding,
     }
@@ -91,12 +91,19 @@ func (d *PlotDrawer) AddPlotter(p *Plotter) error {
             for t := range p.chChange {
                 if t.After(d.plotters[p]) {
                     d.plotters[p] = time.Now()
-                    d.chDraw <- d.plotters[p]
+                    d.redraw()
                 }
             }
         })
     }
     return err
+}
+
+func (d *PlotDrawer) redraw() {
+    select {
+    case d.chDraw <- struct{}{}:
+    default:
+    }
 }
 
 // Layout renders the plot.Plot to the provided layout.Context
@@ -113,7 +120,7 @@ func (d *PlotDrawer) Layout(gtx layout.Context) layout.Dimensions {
         d.mut.Lock()
         d.dpi, d.w, d.h = dpi, w, h
         d.mut.Unlock()
-        d.chDraw <- time.Now()
+        d.redraw()
     }
     
     d.mut.RLock()
@@ -135,35 +142,26 @@ func (d *PlotDrawer) Layout(gtx layout.Context) layout.Dimensions {
 /************************** UPDATE **************************/
 
 func (d *PlotDrawer) update() {
-    lastDraw := time.Now()
-    doUpdate := func() {
+    for range d.chDraw {
         d.mut.RLock()
         dpi, w, h := d.dpi, d.w, d.h
         d.mut.RUnlock()
         cdpi := d.canvas.DPI()
         cw, ch := d.canvas.Size()
-        
+    
         d.recalcAxis(d.chart)
         if dpi != cdpi || w != cw.Dots(dpi) || h != ch.Dots(dpi) {
             d.canvas = vgimg.NewWith(
-                vgimg.UseWH(vg.Length(w/dpi) * vg.Inch, vg.Length(h/dpi) * vg.Inch),
+                vgimg.UseWH(vg.Length(w/dpi)*vg.Inch, vg.Length(h/dpi)*vg.Inch),
                 vgimg.UseDPI(int(dpi)))
             d.drawer = draw.New(d.canvas)
         }
         d.chart.Draw(d.drawer)
         img := d.cloneImg()
-        
+    
         d.mut.Lock()
         d.img = img
         d.mut.Unlock()
-    }
-    
-    doUpdate()
-    for t := range d.chDraw {
-        if t.After(lastDraw) {
-            lastDraw = time.Now()
-            doUpdate()
-        }
     }
 }
 
@@ -175,7 +173,6 @@ func (d *PlotDrawer) cloneImg() draw2.Image {
     draw2.Draw(img, img.Bounds(), image.Image(src), image.Point{}, draw2.Src)
     return img
 }
-
 
 /************************** AXIS **************************/
 
@@ -189,9 +186,9 @@ func (d *PlotDrawer) recalcAxis(chart *plot.Plot) {
         ymax = math.Max(ymax, pymax)
     }
     
-    xpad, ypad := d.paddingX * (xmax - xmin), d.paddingY * (ymax - ymin)
-    chart.X.Min, chart.X.Max = xmin - xpad, xmax + xpad
-    chart.Y.Min, chart.Y.Max = ymin - ypad, ymax + ypad
+    xpad, ypad := d.paddingX*(xmax-xmin), d.paddingY*(ymax-ymin)
+    chart.X.Min, chart.X.Max = xmin-xpad, xmax+xpad
+    chart.Y.Min, chart.Y.Max = ymin-ypad, ymax+ypad
 }
 
 // PaddingX returns the padding ratio for the X axis.
@@ -223,6 +220,6 @@ func (d *PlotDrawer) setPadding(x, y float64) error {
     d.mut.Lock()
     d.paddingX, d.paddingY = x, y
     d.mut.Unlock()
-    d.chDraw <- time.Now()
+    d.redraw()
     return nil
 }

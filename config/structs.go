@@ -19,4 +19,5 @@ var Comms struct {
     }
     
     Serial serial.Mode
+    UseBigEndian bool
 }
