@@ -24,11 +24,15 @@ import (
     "gioui.org/font/gofont"
 )
 
-var window *app.Window
+var (
+	window *app.Window
+	th *material.Theme
+)
 
 func RunGioui() {
     defer os.Exit(0)
     window = app.NewWindow(app.Title("GAUL - Base Station"))
+    th = material.NewTheme(gofont.Collection())
     
     defer window.Close()
     if err := loop(); err != nil {
@@ -38,7 +42,6 @@ func RunGioui() {
 
 
 func loop() error {
-    th := material.NewTheme(gofont.Collection())
     
     generalTab, err := views.NewGeneralTab()
     if err != nil {
@@ -77,12 +80,6 @@ func loop() error {
     
     ticker := time.NewTicker(150 * time.Millisecond)
     defer ticker.Stop()
-    go func() {
-        for range ticker.C {
-            addRandomPoints(plter, 1)
-            log.Infof("Points: %d", plter.Data().Len())
-        }
-    }()
     
     for {
         select {
@@ -95,9 +92,9 @@ func loop() error {
                 tabBar.Layout(gtx, tabs...)
                 e.Frame(gtx.Ops)
             }
-        // case <-ticker.C:
-        //     addRandomPoints(plter, 1)
-        //     log.Infof("Points: %d", plter.Data().Len())
+        case <-ticker.C:
+            addRandomPoints(plter, 1)
+            log.Infof("Points: %d", plter.Data().Len())
         }
     }
 }

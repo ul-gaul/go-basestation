@@ -86,7 +86,7 @@ func (g *GeneralTab) Layout(gtx layout.Context) layout.Dimensions {
                 flexedChart(PltCoords),
             )
         }),
-    
+        
         // Column 2
         layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
             return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
@@ -98,7 +98,3 @@ func (g *GeneralTab) Layout(gtx layout.Context) layout.Dimensions {
         }),
     )
 }
-
-/*
-
- */

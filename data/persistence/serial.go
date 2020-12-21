@@ -11,17 +11,10 @@ import (
     
     . "github.com/ul-gaul/go-basestation/config"
     "github.com/ul-gaul/go-basestation/constants"
-    "github.com/ul-gaul/go-basestation/packet"
+    "github.com/ul-gaul/go-basestation/data/packet"
+    . "github.com/ul-gaul/go-basestation/data/parser"
     "github.com/ul-gaul/go-basestation/utils"
 )
-
-type ISerialPacketParser interface {
-    // Bytes retourne le nombre d'octets d'un paquet
-    Bytes() uint
-    
-    // Parse transforme un buffer en RocketPacket
-    Parse(buffer []byte) (packet.RocketPacket, error)
-}
 
 type ISerialPacketCommunicator interface {
     serial.Port
@@ -34,17 +27,17 @@ type ISerialPacketCommunicator interface {
     SendCommand(fnc packet.CmdFunction, arg packet.Actuator) error
     
     // RocketPacketChannel retourne le channel auquel sont envoyés les RocketPaquets reçus de la fusé.
-    RocketPacketChannel() <- chan packet.RocketPacket
+    RocketPacketChannel() <-chan packet.RocketPacket
     
     // ErrorChannel retourne le channel auquel sont envoyés les erreurs qui surviennent dans le thread de lecture.
-    ErrorChannel() <- chan error
+    ErrorChannel() <-chan error
 }
 
 type serialPacketCommunicator struct {
-    parser ISerialPacketParser
+    parser  ISerialPacketParser
     strPort string
     lastCmdId uint16
-    mut sync.Mutex
+    mut       sync.Mutex
     serial.Port
     
     chAcknowledge  chan packet.AcknowledgePacket
@@ -54,11 +47,11 @@ type serialPacketCommunicator struct {
 
 func NewSerialPacketCommunicator(port string, parser ISerialPacketParser) ISerialPacketCommunicator {
     return &serialPacketCommunicator{
-        parser:  parser,
-        strPort: port,
-        chAcknowledge: make(chan packet.AcknowledgePacket, Comms.Acknowledge.BufferSize),
+        parser:         parser,
+        strPort:        port,
+        chAcknowledge:  make(chan packet.AcknowledgePacket, Comms.Acknowledge.BufferSize),
         chRocketPacket: make(chan packet.RocketPacket, Comms.RocketPacket.BufferSize),
-        chError: make(chan error),
+        chError:        make(chan error),
     }
 }
 
@@ -68,7 +61,7 @@ func (s *serialPacketCommunicator) Start() (err error) {
     } else if s.Port, err = serial.Open(s.strPort, &Comms.Serial); err == nil {
         err = ants.Submit(s.run)
         if err != nil {
-            log.Panicln(err)
+            log.Fatal(err)
         }
     }
     return err
@@ -171,15 +164,15 @@ func (s *serialPacketCommunicator) SendCommand(fnc packet.CmdFunction, arg packe
     id := s.lastCmdId
     s.mut.Unlock()
     
-    _, err = s.Write(packet.CommandPacket{Id: id, Function: fnc, Argument: arg }.ToBytes())
+    _, err = s.Write(packet.CommandPacket{Id: id, Function: fnc, Argument: arg}.ToBytes())
     
     for timeout := time.After(Comms.Acknowledge.Timeout); ack.Id != id && err == nil; {
         select {
-        case ack = <- s.chAcknowledge:
+        case ack = <-s.chAcknowledge:
             if ack.Ack != packet.AckSuccess {
                 err = constants.ErrAcknowledgeFail
             }
-        case <- timeout:
+        case <-timeout:
             err = constants.ErrAcknowledgeTimeout
         default:
         }

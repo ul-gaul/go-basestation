@@ -7,7 +7,7 @@ import (
 )
 
 func applyDefaults() {
-    viper.SetDefault("Comms.Acknowledge.Timeout", 30 * time.Second)
+    viper.SetDefault("Comms.Acknowledge.Timeout", 30*time.Second)
     viper.SetDefault("Comms.Acknowledge.LossThreshold", 20)
     viper.SetDefault("Comms.Acknowledge.BufferSize", 5)
     
@@ -18,4 +18,6 @@ func applyDefaults() {
     viper.SetDefault("Comms.Serial.DataBits", 8)
     viper.SetDefault("Comms.Serial.Parity", serial.NoParity)
     viper.SetDefault("Comms.Serial.StopBits", serial.OneStopBit)
+    
+    viper.SetDefault("Comms.UseBigEndian", false)
 }

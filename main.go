@@ -1,26 +1,22 @@
 package main
 
 import (
-    "gioui.org/app"
     log "github.com/sirupsen/logrus"
     "os"
     
+    "github.com/ul-gaul/go-basestation/cmd"
     _ "github.com/ul-gaul/go-basestation/config"
+    "github.com/ul-gaul/go-basestation/constants"
     "github.com/ul-gaul/go-basestation/pool"
-    "github.com/ul-gaul/go-basestation/ui"
 )
 
 func init() {
     log.SetOutput(os.Stderr)
-    log.SetLevel(log.DebugLevel)
+    log.SetLevel(constants.DefaultLogLevel)
 }
 
 func main() {
     defer pool.Release()
-    
-    if err := pool.Frontend.Submit(ui.RunGioui); err != nil {
-        log.Panicln(err)
-    }
-    app.Title("Gaul - Base Station")
-    app.Main()
+    cmd.Execute()
+    // See cmd/run.go
 }

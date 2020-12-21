@@ -2,6 +2,7 @@ package packet
 
 import (
     "encoding/binary"
+    
     "github.com/ul-gaul/go-basestation/constants"
     "github.com/ul-gaul/go-basestation/utils"
 )

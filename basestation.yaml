@@ -35,3 +35,6 @@ Comms:
     #   1 - serial.OnePointFiveStopBits
     #   2 - serial.TwoStopBits
     StopBits: 0
+
+  # ByteOrder: LittleEndian / BigEndian (default: false)
+  UseBigEndian: false

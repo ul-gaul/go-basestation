@@ -11,6 +11,8 @@ var (
     ErrAcknowledgeFail = errors.New("") // FIXME
     ErrLostTooManyRocketPacket = errors.New("lost too many RocketPacket packets")
     ErrLostTooManyAcknowledge = errors.New("lost too many Acknowledge packets")
+    
+    ErrNotARegularFile = errors.New("file must be a regular file")
 )
 
 
