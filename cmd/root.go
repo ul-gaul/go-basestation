@@ -3,17 +3,16 @@ package cmd
 import (
     "fmt"
     "github.com/spf13/cobra"
-    "io"
     "os"
     "path/filepath"
     
     "github.com/ul-gaul/go-basestation/config"
+    "github.com/ul-gaul/go-basestation/controller"
     "github.com/ul-gaul/go-basestation/utils"
 )
 
 var (
     cfgFile string
-    csvFile io.Reader
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -40,9 +39,10 @@ to quickly create a Cobra application.`,
             cmdName, cmdName, cmdName),
             
         PersistentPreRunE: preRun,
-    
         RunE: run,
-        PersistentPostRun: postRun,
+        PersistentPostRun: func(_ *cobra.Command, _ []string) {
+            controller.Run()
+        },
     }
     
     cobra.OnInitialize(initConfig)

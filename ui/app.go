@@ -5,7 +5,6 @@ import (
     "gioui.org/unit"
     log "github.com/sirupsen/logrus"
     "gonum.org/v1/plot/plotter"
-    "os"
     "time"
     
     "github.com/ul-gaul/go-basestation/ui/plotting"
@@ -20,28 +19,9 @@ import (
     "gioui.org/layout"
     "gioui.org/op"
     "gioui.org/widget/material"
-    
-    "gioui.org/font/gofont"
 )
 
-var (
-	window *app.Window
-	th *material.Theme
-)
-
-func RunGioui() {
-    defer os.Exit(0)
-    window = app.NewWindow(app.Title("GAUL - Base Station"))
-    th = material.NewTheme(gofont.Collection())
-    
-    defer window.Close()
-    if err := loop(); err != nil {
-        log.Panicln(err)
-    }
-}
-
-
-func loop() error {
+func Loop(window *app.Window, th *material.Theme) error {
     
     generalTab, err := views.NewGeneralTab()
     if err != nil {

@@ -12,7 +12,7 @@ import (
     . "github.com/ul-gaul/go-basestation/config"
     "github.com/ul-gaul/go-basestation/constants"
     "github.com/ul-gaul/go-basestation/data/packet"
-    . "github.com/ul-gaul/go-basestation/data/parser"
+    . "github.com/ul-gaul/go-basestation/data/parsing"
     "github.com/ul-gaul/go-basestation/utils"
 )
 
@@ -34,8 +34,8 @@ type ISerialPacketCommunicator interface {
 }
 
 type serialPacketCommunicator struct {
-    parser  ISerialPacketParser
-    strPort string
+    parser    ISerialPacketParser
+    strPort   string
     lastCmdId uint16
     mut       sync.Mutex
     serial.Port
@@ -59,10 +59,7 @@ func (s *serialPacketCommunicator) Start() (err error) {
     if s.Port != nil {
         err = constants.ErrCommunicatorAlreadyStarted
     } else if s.Port, err = serial.Open(s.strPort, &Comms.Serial); err == nil {
-        err = ants.Submit(s.run)
-        if err != nil {
-            log.Fatal(err)
-        }
+        utils.CheckErr(ants.Submit(s.run))
     }
     return err
 }

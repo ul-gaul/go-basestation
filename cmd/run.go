@@ -1,18 +1,14 @@
 package cmd
 
 import (
-    "gioui.org/app"
-    "github.com/panjf2000/ants/v2"
     log "github.com/sirupsen/logrus"
     "github.com/spf13/cobra"
     "math"
     "os"
     
     "github.com/ul-gaul/go-basestation/constants"
+    "github.com/ul-gaul/go-basestation/controller"
     "github.com/ul-gaul/go-basestation/data/persistence"
-    "github.com/ul-gaul/go-basestation/pool"
-    "github.com/ul-gaul/go-basestation/ui"
-    "github.com/ul-gaul/go-basestation/utils"
 )
 
 
@@ -29,7 +25,7 @@ func preRun(cmd *cobra.Command, _ []string) error {
     return nil
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func run(cmd *cobra.Command, _ []string) error {
     csvFlag := cmd.Flag("load-csv")
     if csvFlag.Changed {
         stat, err := os.Stat(csvFlag.Value.String())
@@ -39,28 +35,10 @@ func run(cmd *cobra.Command, args []string) error {
         if !stat.Mode().IsRegular() {
             return constants.ErrNotARegularFile
         }
-        csvFile, err = os.Open(csvFlag.Value.String())
+        
+        packets, err := persistence.ReadCsv(csvFlag.Value.String())
         if err != nil { return err }
+        controller.Collector().AddPackets(packets...)
     }
     return nil
-}
-
-func postRun(cmd *cobra.Command, args []string) {
-    if csvFile != nil {
-        ants.Submit(readCsv)
-    }
-    
-    utils.CheckErr(pool.Frontend.Submit(ui.RunGioui))
-    app.Title("Gaul - Base Station")
-    app.Main()
-}
-
-func readCsv() {
-    // FIXME - FONCTION TEMPORAIRE
-    
-    packets, err := persistence.NewCsvPacketReader(csvFile).ReadAll()
-    if err != nil {
-        log.Fatalln(err)
-    }
-    _ = packets
 }

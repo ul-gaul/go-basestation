@@ -1,4 +1,4 @@
-package parser
+package parsing
 
 import (
     "github.com/ul-gaul/go-basestation/data/packet"
