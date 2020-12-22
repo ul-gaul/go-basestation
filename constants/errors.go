@@ -1,22 +1,23 @@
 package constants
 
 import (
-    "errors"
+    e "errors"
 )
 
 var (
-    ErrCommunicatorAlreadyStarted = errors.New("the serial communicator has already been started")
-    ErrInvalidChecksum = errors.New("invalid packet checksum")
-    ErrAcknowledgeTimeout = errors.New("") // FIXME
-    ErrAcknowledgeFail = errors.New("") // FIXME
-    ErrLostTooManyRocketPacket = errors.New("lost too many RocketPacket packets")
-    ErrLostTooManyAcknowledge = errors.New("lost too many Acknowledge packets")
+    ErrCommunicatorAlreadyStarted = e.New("the serial communicator has already been started")
+    ErrInvalidChecksum = e.New("invalid packet checksum")
+    ErrAcknowledgeTimeout = e.New("") // FIXME
+    ErrAcknowledgeFail = e.New("")    // FIXME
+    ErrLostTooManyRocketPacket = e.New("lost too many RocketPacket packets")
+    ErrLostTooManyAcknowledge = e.New("lost too many Acknowledge packets")
     
-    ErrNotARegularFile = errors.New("file must be a regular file")
+    ErrNotARegularFile = e.New("file must be a regular file")
+    ErrConnectionAlreadyOpen = e.New("another connection is open")
 )
 
 
 /** UI Errors ***/
 var (
-    ErrPaddingOutOfRange = errors.New("padding ratio must be between -1 and 1")
+    ErrPaddingOutOfRange = e.New("padding ratio must be between -1 and 1")
 )

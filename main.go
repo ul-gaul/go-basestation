@@ -18,5 +18,5 @@ func init() {
 func main() {
     defer pool.Release()
     cmd.Execute()
-    // See cmd/run.go
+    // See controller.Run (controller/controller.go)
 }
