@@ -1,13 +1,13 @@
 package packet
 
 // Direction représente la direction par rapport aux axes/pôles magnétiques
-type Direction rune
+type Direction string
 
 const (
-    North Direction = 'N'
-    South Direction = 'S'
-    East  Direction = 'E'
-    West  Direction = 'W'
+    North Direction = "N"
+    South Direction = "S"
+    East  Direction = "E"
+    West  Direction = "W"
 )
 
 // Vector représente une coordonnée ou direction/vecteur tridimensionnelle

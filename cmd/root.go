@@ -7,7 +7,7 @@ import (
     "path/filepath"
     
     "github.com/ul-gaul/go-basestation/config"
-    "github.com/ul-gaul/go-basestation/controller"
+    "github.com/ul-gaul/go-basestation/ui"
     "github.com/ul-gaul/go-basestation/utils"
 )
 
@@ -41,7 +41,7 @@ to quickly create a Cobra application.`,
         PersistentPreRunE: preRun,
         RunE: run,
         PersistentPostRun: func(_ *cobra.Command, _ []string) {
-            controller.Run()
+            ui.Run()
         },
     }
     

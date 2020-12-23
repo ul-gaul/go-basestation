@@ -7,8 +7,8 @@ import (
     "os"
     
     "github.com/ul-gaul/go-basestation/constants"
-    "github.com/ul-gaul/go-basestation/controller"
     "github.com/ul-gaul/go-basestation/data/persistence"
+    "github.com/ul-gaul/go-basestation/ui"
 )
 
 
@@ -38,7 +38,7 @@ func run(cmd *cobra.Command, _ []string) error {
         
         packets, err := persistence.ReadCsv(csvFlag.Value.String())
         if err != nil { return err }
-        controller.Collector().AddPackets(packets...)
+        ui.Collector().AddPackets(packets...)
     }
     return nil
 }
