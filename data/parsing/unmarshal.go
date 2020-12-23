@@ -4,6 +4,7 @@ import (
     "bytes"
     "encoding/binary"
     "errors"
+    "unsafe"
     
     "github.com/ul-gaul/go-basestation/config"
     "github.com/ul-gaul/go-basestation/data/packet"
@@ -15,7 +16,7 @@ func UnmarshalParser() (ISerialPacketParser, error) {
         order = binary.BigEndian
     }
     
-    size := binary.Size(packet.RocketPacket{})
+    size := unsafe.Sizeof(packet.RocketPacket{})
     if size < 0 {
         return nil, errors.New("invalid byte size of RocketPacket")
     }

@@ -7,11 +7,11 @@ import (
     "github.com/ul-gaul/go-basestation/data/packet"
 )
 
-type DataCallback func([]packet.RocketPacket)
+type DataCallback func(packet.PacketList)
 
 type IDataCollector interface {
     // Packets returns all the data added since the application started or since the last Clear.
-    Packets() []packet.RocketPacket
+    Packets() packet.PacketList
     
     // Clear clears all the data collected
     Clear()
@@ -30,7 +30,7 @@ var _ IDataCollector = (*dataCollector)(nil)
 
 type dataCollector struct {
     mutCallbacks, mutData sync.RWMutex
-    data, newData         []packet.RocketPacket
+    data, newData         packet.PacketList
     chDataChanged         chan struct{}
     callbacks             map[uint]DataCallback
     lastID                uint
@@ -82,7 +82,7 @@ func (dc *dataCollector) AddPackets(packets ...packet.RocketPacket) {
     }
 }
 
-func (dc *dataCollector) Packets() []packet.RocketPacket {
+func (dc *dataCollector) Packets() packet.PacketList {
     dc.mutData.RLock()
     defer dc.mutData.RUnlock()
     return dc.data
