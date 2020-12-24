@@ -8,7 +8,6 @@ import (
     "gioui.org/widget/material"
     log "github.com/sirupsen/logrus"
     "gonum.org/v1/plot/plotter"
-    "gonum.org/v1/plot/vg/draw"
     "time"
     
     "github.com/ul-gaul/go-basestation/data/packet"
@@ -47,9 +46,10 @@ func loop() {
     drawer.Chart().X.Tick.Marker = ticker.NewTicker(10, ticker.ContainData)
     
     plter, err := plotting.NewPlotter(
-        plotting.WithStyleIdx(0),
-        plotting.WithPointStyle(draw.GlyphStyle{Radius: 1.5, Shape: draw.CircleGlyph{}}),
+        // plotting.WithStyleIdx(0),
+        // plotting.WithPointStyle(draw.GlyphStyle{Radius: 1.5, Shape: draw.CircleGlyph{}}),
         plotting.WithLegend(fmt.Sprintf("Line #%d", 1)),
+        plotting.WithDataLimit(150),
         plotting.WithData(squarePlot(0)...),
     )
     utils.CheckErr(err)
@@ -68,7 +68,7 @@ func loop() {
     ops := new(op.Ops)
     tabBar := widgets.Tab(theme)
     
-    tick := time.NewTicker(150 * time.Millisecond)
+    tick := time.NewTicker(100 * time.Millisecond)
     defer tick.Stop()
     
     chData := make(chan packet.PacketList)

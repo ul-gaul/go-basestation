@@ -11,10 +11,30 @@ import (
 
 // TODO Documentation
 
+const (
+	DefaultPaddingRatio = 0.03
+)
+
+var (
+    DefaultLineStyle = draw.LineStyle{
+        Color:    plotutil.Color(0),
+        Width:    vg.Points(1),
+        Dashes:   nil,
+        DashOffs: 0,
+    }
+    DefaultPointStyle = draw.GlyphStyle{
+        Color:  color.Black,
+        Radius: vg.Points(1),
+        Shape:  draw.CircleGlyph{},
+    }
+)
+
 func NewPlotter(opts ...Option) (p *Plotter, err error) {
     cfg := config{
-        lineStyle:  plotter.DefaultLineStyle,
-        pointStyle: plotter.DefaultGlyphStyle,
+        lineStyle:  DefaultLineStyle,
+        pointStyle: DefaultPointStyle,
+        padX:       DefaultPaddingRatio,
+        padY:       DefaultPaddingRatio,
     }
     
     for _, opt := range opts {
@@ -22,15 +42,20 @@ func NewPlotter(opts ...Option) (p *Plotter, err error) {
     }
     
     p = &Plotter{
-        name: cfg.name,
-        chChange: make(chan time.Time),
+        Name:           cfg.name,
+        LineStyle:      cfg.lineStyle,
+        PointStyleFunc: func(_ int) draw.GlyphStyle { return cfg.pointStyle },
+        DataLimit:      cfg.limit,
+        chChange:       make(chan time.Time, 1),
     }
-    p.line, p.points, err = plotter.NewLinePoints(new(plotter.XYs))
-    if err != nil {
+    
+    if err = p.SetPaddingX(cfg.padX); err != nil {
         return nil, err
     }
-    p.line.LineStyle = cfg.lineStyle
-    p.points.GlyphStyle = cfg.pointStyle
+    if err = p.SetPaddingY(cfg.padY); err != nil {
+        return nil, err
+    }
+    
     p.AppendAll(cfg.xys)
     
     return p, nil
@@ -39,19 +64,25 @@ func NewPlotter(opts ...Option) (p *Plotter, err error) {
 type config struct {
     name       string
     xys        plotter.XYs
+    limit      int
     lineStyle  draw.LineStyle
     pointStyle draw.GlyphStyle
+    padX, padY float64
 }
 
 type Option func(opts *config)
 
+func WithPaddingRatio(padX, padY float64) Option {
+    return func(opts *config) { opts.padX, opts.padY = padX, padY }
+}
+func WithDataLimit(limit int) Option            { return func(opts *config) { opts.limit = limit } }
 func WithLegend(name string) Option             { return func(opts *config) { opts.name = name } }
 func WithData(xys ...plotter.XY) Option         { return func(opts *config) { opts.xys = xys } }
 func WithLineStyle(style draw.LineStyle) Option { return func(opts *config) { opts.lineStyle = style } }
 func WithPointStyle(style draw.GlyphStyle) Option {
     return func(opts *config) { opts.pointStyle = style }
 }
-func WithColorIdx(i int) Option                 { return WithColor(plotutil.Color(i)) }
+func WithColorIdx(i int) Option { return WithColor(plotutil.Color(i)) }
 func WithColor(c color.Color) Option {
     if c == nil {
         c = plotter.DefaultLineStyle.Color

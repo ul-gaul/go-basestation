@@ -8,23 +8,27 @@ import (
     "sync"
     "time"
     
+    "github.com/ul-gaul/go-basestation/constants"
     "github.com/ul-gaul/go-basestation/utils"
 )
+
+// TODO Documentation
 
 var _ plot.DataRanger = (*Plotter)(nil)
 var _ plot.Plotter = (*Plotter)(nil)
 
 type Plotter struct {
-    name                   string
-    line                   *plotter.Line
-    points                 *plotter.Scatter
+    Name                   string
+    LineStyle              draw.LineStyle
+    PointStyleFunc         func(int) draw.GlyphStyle
+    DataLimit              int
     xys                    plotter.XYs
     xmin, xmax, ymin, ymax float64
+    padRatioX, padRatioY   float64
     chChange               chan time.Time
     mut                    sync.Mutex
 }
 
-func (p *Plotter) Name() string      { return p.name }
 func (p *Plotter) Data() plotter.XYs { return p.xys }
 
 func (p *Plotter) DataRange() (xmin, xmax, ymin, ymax float64) {
@@ -58,8 +62,6 @@ func (p *Plotter) ReplaceAll(xys plotter.XYs) {
 func (p *Plotter) setXYs(xys plotter.XYs) {
     p.mut.Lock()
     p.xys = xys
-    p.line.XYs = xys
-    p.points.XYs = xys
     defer p.mut.Unlock()
     
     select {
@@ -68,25 +70,52 @@ func (p *Plotter) setXYs(xys plotter.XYs) {
     }
 }
 
+// PaddingX returns the padding ratio for the X axis.
+func (p *Plotter) PaddingX() float64 { return p.padRatioX }
+
+// PaddingY returns the padding ratio for the Y axis.
+func (p *Plotter) PaddingY() float64 { return p.padRatioY }
+
+// SetPaddingX sets the padding ratio for the X axis.
+// Must be between -1 and 1;
+func (p *Plotter) SetPaddingX(padding float64) error { return p.setPadding(padding, p.padRatioY) }
+
+// SetPaddingX sets the data padding for the Y axis.
+// Must be between -1 and 1;
+func (p *Plotter) SetPaddingY(padding float64) error { return p.setPadding(p.padRatioX, padding) }
+
+func (p *Plotter) setPadding(x, y float64) error {
+    if x < -1 || x > 1 || y < -1 || y > 1 {
+        return constants.ErrPaddingOutOfRange
+    }
+    p.padRatioX, p.padRatioY = x, y
+    return nil
+}
+
 // Plot implements the plot.Plotter interface
 func (p *Plotter) Plot(c draw.Canvas, plt *plot.Plot) {
+    var xys plotter.XYs
+    
     p.mut.Lock()
-    line, points, err := plotter.NewLinePoints(p.xys)
-    utils.CheckErr(err)
+    if p.DataLimit <= 0 || p.xys.Len() < p.DataLimit {
+        xys = p.xys[:]
+    } else {
+        xys = p.xys[p.xys.Len()-p.DataLimit:]
+    }
     p.mut.Unlock()
     
-    line.LineStyle = p.LineStyle()
-    points.GlyphStyle = p.PointStyle()
+    line, points, err := plotter.NewLinePoints(xys)
+    utils.CheckErr(err)
+    
+    line.LineStyle = p.LineStyle
+    points.GlyphStyleFunc = p.PointStyleFunc
+    
+    xmin, xmax, ymin, ymax := utils.FindMinMax(xys...)
+    xpad, ypad := p.padRatioX*(xmax-xmin), p.padRatioY*(ymax-ymin)
+    plt.X.Min, plt.X.Max = xmin-xpad, xmax+xpad
+    plt.Y.Min, plt.Y.Max = ymin-ypad, ymax+ypad
+    
     
     line.Plot(c, plt)
     points.Plot(c, plt)
-}
-
-/*********************** STYLING ***********************/
-
-func (p *Plotter) LineStyle() draw.LineStyle                 { return p.line.LineStyle }
-func (p *Plotter) PointStyle() draw.GlyphStyle               { return p.points.GlyphStyle }
-func (p *Plotter) PointStyleFunc() func(int) draw.GlyphStyle { return p.points.GlyphStyleFunc }
-func (p *Plotter) SetPointStyleFunc(fnc func(int) draw.GlyphStyle) {
-    p.points.GlyphStyleFunc = fnc
 }
