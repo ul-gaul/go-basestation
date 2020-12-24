@@ -38,3 +38,9 @@ Comms:
 
   # ByteOrder: LittleEndian / BigEndian (default: false)
   UseBigEndian: false
+
+
+# Paramètres reliés aux éléments de l'interface
+Frontend:
+
+  PlotScale: 0.6

@@ -37,4 +37,5 @@ func Initialize(cfgFile string) {
     
     utils.CheckErr(viper.ReadInConfig())
     utils.CheckErr(viper.UnmarshalKey("Comms", &Comms))
+    utils.CheckErr(viper.UnmarshalKey("Frontend", &Frontend))
 }

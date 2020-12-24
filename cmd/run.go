@@ -38,7 +38,7 @@ func run(cmd *cobra.Command, _ []string) error {
         
         packets, err := persistence.ReadCsv(csvFlag.Value.String())
         if err != nil { return err }
-        ui.Collector().AddPackets(packets...)
+        ui.Collector.AddPackets(packets...)
     }
     return nil
 }

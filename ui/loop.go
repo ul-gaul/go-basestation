@@ -15,7 +15,7 @@ import (
 
 var (
     running   bool
-    collector IDataCollector
+    Collector IDataCollector
     parser    parsing.ISerialPacketParser
     conn      ISerialPacketCommunicator
 )
@@ -23,7 +23,7 @@ var (
 func init() {
     var err error
     
-    collector, err = New()
+    Collector, err = New()
     utils.CheckErr(err)
     
     parser, err = parsing.UnmarshalParser()
@@ -57,7 +57,7 @@ func Connect(port string) error {
         for {
             select {
             case pkt = <-conn.RocketPacketChannel():
-                collector.AddPackets(pkt)
+                Collector.AddPackets(pkt)
             case err = <-conn.ErrorChannel():
                 // TODO Rendre moins agressif (ex: afficher l'erreur dans l'interface et fermer la connexion)
                 utils.CheckErr(err)

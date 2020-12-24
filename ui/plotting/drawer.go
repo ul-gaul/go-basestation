@@ -5,6 +5,7 @@ import (
     "gioui.org/op"
     "gioui.org/op/clip"
     "gioui.org/op/paint"
+    "github.com/disintegration/imaging"
     "gonum.org/v1/plot"
     "gonum.org/v1/plot/vg"
     "gonum.org/v1/plot/vg/draw"
@@ -15,6 +16,7 @@ import (
     "sync"
     "time"
     
+    cfg "github.com/ul-gaul/go-basestation/config"
     "github.com/ul-gaul/go-basestation/constants"
     "github.com/ul-gaul/go-basestation/pool"
     "github.com/ul-gaul/go-basestation/ui/plotting/ticker"
@@ -69,7 +71,8 @@ func NewPlotDrawer() (*PlotDrawer, error) {
     d.w, d.h = DefaultWidth.Dots(d.dpi), DefaultHeight.Dots(d.dpi)
     
     d.drawer = draw.New(d.canvas)
-    d.img = d.cloneImg()
+    d.img = imaging.Clone(d.canvas.Image())
+    
     return d, pool.Frontend.Submit(d.update)
 }
 
@@ -99,13 +102,6 @@ func (d *PlotDrawer) AddPlotter(p *Plotter) error {
     return err
 }
 
-func (d *PlotDrawer) redraw() {
-    select {
-    case d.chDraw <- struct{}{}:
-    default:
-    }
-}
-
 // Layout renders the plot.Plot to the provided layout.Context
 func (d *PlotDrawer) Layout(gtx layout.Context) layout.Dimensions {
     rect := image.Rect(
@@ -114,22 +110,16 @@ func (d *PlotDrawer) Layout(gtx layout.Context) layout.Dimensions {
         gtx.Constraints.Max.Y)
     
     // 1 dp = 160 dpi
-    dpi := float64(gtx.Metric.PxPerDp) * 160
+    dpi := float64(gtx.Metric.PxPerDp) * 160 * cfg.Frontend.PlotScale
     w, h := float64(rect.Dx()), float64(rect.Dy())
     if (dpi > 0 && w > 0 && h > 0) && (dpi != d.dpi || w != d.w || h != d.h) {
-        d.mut.Lock()
         d.dpi, d.w, d.h = dpi, w, h
-        d.mut.Unlock()
         d.redraw()
     }
     
-    d.mut.RLock()
-    img := d.img
-    d.mut.RUnlock()
-    
     macro := op.Record(gtx.Ops)
     op.InvalidateOp{}.Add(gtx.Ops)
-    paint.NewImageOp(img).Add(gtx.Ops)
+    paint.NewImageOp(d.img).Add(gtx.Ops)
     clip.Rect(rect).Add(gtx.Ops)
     paint.PaintOp{}.Add(gtx.Ops)
     macro.Stop().Add(gtx.Ops)
@@ -139,40 +129,36 @@ func (d *PlotDrawer) Layout(gtx layout.Context) layout.Dimensions {
     }
 }
 
+func (d *PlotDrawer) redraw() {
+    select {
+    case d.chDraw <- struct{}{}:
+    default:
+    }
+}
+
 /************************** UPDATE **************************/
 
 func (d *PlotDrawer) update() {
+    d.canvas.Push()
     for range d.chDraw {
-        d.mut.RLock()
-        dpi, w, h := d.dpi, d.w, d.h
-        d.mut.RUnlock()
         cdpi := d.canvas.DPI()
         cw, ch := d.canvas.Size()
     
         d.recalcAxis(d.chart)
-        if dpi != cdpi || w != cw.Dots(dpi) || h != ch.Dots(dpi) {
+        if d.dpi != cdpi || d.w != cw.Dots(d.dpi) || d.h != ch.Dots(d.dpi) {
             d.canvas = vgimg.NewWith(
-                vgimg.UseWH(vg.Length(w/dpi)*vg.Inch, vg.Length(h/dpi)*vg.Inch),
-                vgimg.UseDPI(int(dpi)))
+                vgimg.UseWH(vg.Length(d.w/d.dpi)*vg.Inch, vg.Length(d.h/d.dpi)*vg.Inch),
+                vgimg.UseDPI(int(d.dpi)))
             d.drawer = draw.New(d.canvas)
         }
         d.chart.Draw(d.drawer)
-        img := d.cloneImg()
-    
-        d.mut.Lock()
+        d.chart.DataCanvas(d.drawer)
+        
+        img := imaging.Clone(d.canvas.Image())
         d.img = img
-        d.mut.Unlock()
     }
 }
 
-func (d *PlotDrawer) cloneImg() draw2.Image {
-    src := d.canvas.Image()
-    img := draw2.Image(image.NewRGBA(image.Rect(
-        src.Bounds().Min.X, src.Bounds().Min.Y,
-        src.Bounds().Max.X, src.Bounds().Max.Y)))
-    draw2.Draw(img, img.Bounds(), image.Image(src), image.Point{}, draw2.Src)
-    return img
-}
 
 /************************** AXIS **************************/
 
@@ -217,9 +203,7 @@ func (d *PlotDrawer) setPadding(x, y float64) error {
     if x < -1 || x > 1 || y < -1 || y > 1 {
         return constants.ErrPaddingOutOfRange
     }
-    d.mut.Lock()
     d.paddingX, d.paddingY = x, y
-    d.mut.Unlock()
     d.redraw()
     return nil
 }
