@@ -133,7 +133,6 @@ func (d *PlotDrawer) update() {
         cdpi := d.canvas.DPI()
         cw, ch := d.canvas.Size()
         
-        // RecalcAxis(d.chart, d.paddingX, d.paddingY)
         if d.dpi != cdpi || d.w != cw.Dots(d.dpi) || d.h != ch.Dots(d.dpi) {
             d.canvas = vgimg.NewWith(
                 vgimg.UseWH(vg.Length(d.w/d.dpi)*vg.Inch, vg.Length(d.h/d.dpi)*vg.Inch),
@@ -146,27 +145,3 @@ func (d *PlotDrawer) update() {
         d.img = img
     }
 }
-
-
-/************************** AXIS **************************/
-
-// func RecalcAxis(chart *plot.Plot, padX, padY float64) {
-//     v := reflect.Indirect(reflect.ValueOf(chart)).FieldByName("plotters")
-//     plotters := utils.GetUnexportedField(v).([]plot.Plotter)
-//
-//     var xmin, xmax, ymin, ymax float64
-//     for _, p := range plotters {
-//         if dr, ok := p.(plot.DataRanger); ok {
-//             pxmin, pxmax, pymin, pymax := dr.DataRange()
-//             xmin = math.Min(xmin, pxmin)
-//             xmax = math.Max(xmax, pxmax)
-//             ymin = math.Min(ymin, pymin)
-//             ymax = math.Max(ymax, pymax)
-//         }
-//     }
-//
-//     log.Infof("Min(%f, %f) // Max(%f, %f)", xmin, ymin, xmax, ymax)
-//     xpad, ypad := padX*(xmax-xmin), padY*(ymax-ymin)
-//     chart.X.Min, chart.X.Max = xmin-xpad, xmax+xpad
-//     chart.Y.Min, chart.Y.Max = ymin-ypad, ymax+ypad
-// }

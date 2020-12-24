@@ -4,7 +4,6 @@ import (
     "gonum.org/v1/plot"
     "gonum.org/v1/plot/plotter"
     "gonum.org/v1/plot/vg/draw"
-    "math"
     "sync"
     "time"
     
@@ -14,7 +13,6 @@ import (
 
 // TODO Documentation
 
-var _ plot.DataRanger = (*Plotter)(nil)
 var _ plot.Plotter = (*Plotter)(nil)
 
 type Plotter struct {
@@ -23,17 +21,12 @@ type Plotter struct {
     PointStyleFunc         func(int) draw.GlyphStyle
     DataLimit              int
     xys                    plotter.XYs
-    xmin, xmax, ymin, ymax float64
     padRatioX, padRatioY   float64
     chChange               chan time.Time
     mut                    sync.Mutex
 }
 
 func (p *Plotter) Data() plotter.XYs { return p.xys }
-
-func (p *Plotter) DataRange() (xmin, xmax, ymin, ymax float64) {
-    return p.xmin, p.xmax, p.ymin, p.ymax
-}
 
 func (p *Plotter) Prepend(xys ...plotter.XY)       { p.PrependAll(xys) }
 func (p *Plotter) PrependAll(xys plotter.XYs)      { p.InsertAll(0, xys) }
@@ -44,18 +37,10 @@ func (p *Plotter) InsertAll(i int, xys plotter.XYs) {
     if len(xys) == 0 {
         return
     }
-    
-    xmin, xmax, ymin, ymax := utils.FindMinMax(xys...)
-    p.xmin = math.Min(p.xmin, xmin)
-    p.xmax = math.Max(p.xmax, xmax)
-    p.ymin = math.Min(p.ymin, ymin)
-    p.ymax = math.Max(p.ymax, ymax)
-    
     p.setXYs(append(p.xys[:i], append(xys, p.xys[i:]...)...))
 }
 
 func (p *Plotter) ReplaceAll(xys plotter.XYs) {
-    p.xmin, p.xmax, p.ymin, p.ymax = utils.FindMinMax(xys...)
     p.setXYs(xys)
 }
 
