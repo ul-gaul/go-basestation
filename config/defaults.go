@@ -20,4 +20,6 @@ func applyDefaults() {
     viper.SetDefault("Comms.Serial.StopBits", serial.OneStopBit)
     
     viper.SetDefault("Comms.UseBigEndian", false)
+    
+    viper.SetDefault("Frontend.PlotScale", 1.0)
 }

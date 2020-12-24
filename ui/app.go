@@ -8,12 +8,13 @@ import (
     "gioui.org/widget/material"
     log "github.com/sirupsen/logrus"
     "gonum.org/v1/plot/plotter"
+    "gonum.org/v1/plot/vg/draw"
     "time"
     
     "github.com/ul-gaul/go-basestation/data/packet"
     "github.com/ul-gaul/go-basestation/ui/plotting"
     "github.com/ul-gaul/go-basestation/ui/plotting/lines"
-    ticker2 "github.com/ul-gaul/go-basestation/ui/plotting/ticker"
+    "github.com/ul-gaul/go-basestation/ui/plotting/ticker"
     "github.com/ul-gaul/go-basestation/ui/views"
     "github.com/ul-gaul/go-basestation/ui/widgets"
     "github.com/ul-gaul/go-basestation/utils"
@@ -43,10 +44,11 @@ func loop() {
     utils.CheckErr(err)
     drawer.Chart().Add(lines.NewOriginLines())
     drawer.Chart().Add(plotter.NewGrid())
-    drawer.Chart().X.Tick.Marker = ticker2.NewTicker(10, ticker2.ContainData)
+    drawer.Chart().X.Tick.Marker = ticker.NewTicker(10, ticker.ContainData)
     
     plter, err := plotting.NewPlotter(
         plotting.WithStyleIdx(0),
+        plotting.WithPointStyle(draw.GlyphStyle{Radius: 1.5, Shape: draw.CircleGlyph{}}),
         plotting.WithLegend(fmt.Sprintf("Line #%d", 1)),
         plotting.WithData(squarePlot(0)...),
     )
@@ -66,12 +68,12 @@ func loop() {
     ops := new(op.Ops)
     tabBar := widgets.Tab(theme)
     
-    ticker := time.NewTicker(150 * time.Millisecond)
-    defer ticker.Stop()
+    tick := time.NewTicker(150 * time.Millisecond)
+    defer tick.Stop()
     
     chData := make(chan packet.PacketList)
-    collector.AddCallback(func(packets packet.PacketList) { chData <- packets })
-    generalTab.Plotters()[views.PltAltitude].AppendAll(collector.Packets().AltitudeData())
+    Collector.AddCallback(func(packets packet.PacketList) { chData <- packets })
+    generalTab.Plotters()[views.PltAltitude].AppendAll(Collector.Packets().AltitudeData())
     
     for {
         select {
@@ -87,7 +89,7 @@ func loop() {
             }
         case packets := <-chData:
             generalTab.Plotters()[views.PltAltitude].AppendAll(packets.AltitudeData())
-        case <-ticker.C:
+        case <-tick.C:
             addRandomPoints(plter, 1)
             log.Infof("Points: %d", plter.Data().Len())
         }

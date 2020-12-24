@@ -5,6 +5,7 @@ import (
     "gonum.org/v1/plot/plotter"
     "gonum.org/v1/plot/vg/draw"
     "math"
+    "sync"
     "time"
     
     "github.com/ul-gaul/go-basestation/utils"
@@ -20,6 +21,7 @@ type Plotter struct {
     xys                    plotter.XYs
     xmin, xmax, ymin, ymax float64
     chChange               chan time.Time
+    mut                    sync.Mutex
 }
 
 func (p *Plotter) Name() string      { return p.name }
@@ -54,9 +56,11 @@ func (p *Plotter) ReplaceAll(xys plotter.XYs) {
 }
 
 func (p *Plotter) setXYs(xys plotter.XYs) {
+    p.mut.Lock()
     p.xys = xys
     p.line.XYs = xys
     p.points.XYs = xys
+    defer p.mut.Unlock()
     
     select {
     case p.chChange <- time.Now():
@@ -66,8 +70,16 @@ func (p *Plotter) setXYs(xys plotter.XYs) {
 
 // Plot implements the plot.Plotter interface
 func (p *Plotter) Plot(c draw.Canvas, plt *plot.Plot) {
-    p.line.Plot(c, plt)
-    p.points.Plot(c, plt)
+    p.mut.Lock()
+    line, points, err := plotter.NewLinePoints(p.xys)
+    utils.CheckErr(err)
+    p.mut.Unlock()
+    
+    line.LineStyle = p.LineStyle()
+    points.GlyphStyle = p.PointStyle()
+    
+    line.Plot(c, plt)
+    points.Plot(c, plt)
 }
 
 /*********************** STYLING ***********************/

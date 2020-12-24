@@ -21,3 +21,8 @@ var Comms struct {
     Serial serial.Mode
     UseBigEndian bool
 }
+
+
+var Frontend struct {
+    PlotScale float64
+}
