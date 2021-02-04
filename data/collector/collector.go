@@ -7,8 +7,10 @@ import (
     "github.com/ul-gaul/go-basestation/data/packet"
 )
 
+// DataCallback represent the funciton called when data is added.
 type DataCallback func(packet.PacketList)
 
+// IDataCollector is used to regroup the data received and manage the data listeners (see DataCallback).
 type IDataCollector interface {
     // Packets returns all the data added since the application started or since the last Clear.
     Packets() packet.PacketList
@@ -26,6 +28,7 @@ type IDataCollector interface {
     RemoveCallback(id uint)
 }
 
+// Ensure *dataCollector implements IDataCollector
 var _ IDataCollector = (*dataCollector)(nil)
 
 type dataCollector struct {
@@ -36,6 +39,7 @@ type dataCollector struct {
     lastID                uint
 }
 
+// New create a new data collector.
 func New() (IDataCollector, error) {
     dc := &dataCollector{
         chDataChanged: make(chan struct{}, 1),
@@ -47,6 +51,8 @@ func New() (IDataCollector, error) {
     return dc, nil
 }
 
+
+// run listen for changes and call the callbacks when a change occurs.
 func (dc *dataCollector) run() {
     var chunk []packet.RocketPacket
     var wg sync.WaitGroup
@@ -70,6 +76,7 @@ func (dc *dataCollector) run() {
     }
 }
 
+// AddPackets appends the packets to the list
 func (dc *dataCollector) AddPackets(packets ...packet.RocketPacket) {
     dc.mutData.Lock()
     dc.newData = append(dc.newData, packets...)
@@ -82,12 +89,14 @@ func (dc *dataCollector) AddPackets(packets ...packet.RocketPacket) {
     }
 }
 
+// Packets returns all the data added since the application started or since the last Clear.
 func (dc *dataCollector) Packets() packet.PacketList {
     dc.mutData.RLock()
     defer dc.mutData.RUnlock()
     return dc.data
 }
 
+// Clear clears all the data collected
 func (dc *dataCollector) Clear() {
     dc.mutData.Lock()
     defer dc.mutData.Unlock()
@@ -95,6 +104,7 @@ func (dc *dataCollector) Clear() {
     dc.newData = nil
 }
 
+// AddCallback adds a callback which is called when new packets are received/read.
 func (dc *dataCollector) AddCallback(cb DataCallback) uint {
     dc.mutCallbacks.Lock()
     defer dc.mutCallbacks.Unlock()
@@ -103,6 +113,7 @@ func (dc *dataCollector) AddCallback(cb DataCallback) uint {
     return dc.lastID
 }
 
+// RemoveCallback removes the specified callback
 func (dc *dataCollector) RemoveCallback(cb uint) {
     dc.mutCallbacks.Lock()
     defer dc.mutCallbacks.Unlock()

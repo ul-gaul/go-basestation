@@ -25,19 +25,23 @@ const (
     DefaultHeight vg.Length = 400
 )
 
+// PlotDrawer est une structure qui TODO
 type PlotDrawer struct {
     chart    *plot.Plot
     drawer   draw.Canvas
     canvas   *vgimg.Canvas
+    
+    // le temps lié à chaque Plotter correspond au moment du dernier changement de données
     plotters map[*Plotter]time.Time
     
     img draw2.Image
     
+    // Largeur et hauteur de l'image générée
     w, h float64
+    // DPI à utiliser pour générer l'image du graphique
     dpi  float64
     
     mut         sync.RWMutex
-    initialized bool
     chDraw      chan struct{}
 }
 

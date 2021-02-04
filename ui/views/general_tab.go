@@ -45,7 +45,9 @@ type GeneralTab struct {
     drawers  map[PlotId]*plotting.PlotDrawer
 }
 
+// Plotters retourne les plotting.Plotter (gère les données) contenu dans l'onglet
 func (g *GeneralTab) Plotters() map[PlotId]*plotting.Plotter   { return g.plotters }
+// Drawers retourne les graphiques contenu dans l'onglet
 func (g *GeneralTab) Drawers() map[PlotId]*plotting.PlotDrawer { return g.drawers }
 
 func createPlot(title, xAxis, yAxis string) (plt *plotting.Plotter, drawer *plotting.PlotDrawer, err error) {
@@ -69,7 +71,9 @@ func createPlot(title, xAxis, yAxis string) (plt *plotting.Plotter, drawer *plot
     return
 }
 
+// Layout implement layout.Widget
 func (g *GeneralTab) Layout(gtx layout.Context) layout.Dimensions {
+    // fonction qui retourne le layout du graphique spécifié
     flexedChart := func(id PlotId) layout.FlexChild {
         return layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
             return layout.UniformInset(unit.Px(10)).Layout(gtx, g.drawers[id].Layout)
@@ -77,6 +81,7 @@ func (g *GeneralTab) Layout(gtx layout.Context) layout.Dimensions {
     }
     
     return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+        
         // Column 1
         layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
             return layout.Flex{Axis: layout.Vertical}.Layout(gtx,

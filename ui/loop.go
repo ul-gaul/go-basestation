@@ -31,10 +31,12 @@ var (
 func loop() {
     defer log.Exit(0)
     
+    // Initilialise la fenêtre de l'application
     window = app.NewWindow(app.Title("GAUL - Base Station"))
     theme = material.NewTheme(gofont.Collection())
     defer window.Close()
     
+    // Initialise l'onglet "General"
     generalTab, err := views.NewGeneralTab()
     utils.CheckErr(err)
     
@@ -45,6 +47,7 @@ func loop() {
     drawer.Chart().Add(plotter.NewGrid())
     drawer.Chart().X.Tick.Marker = ticker.NewTicker(10, ticker.ContainData)
     
+    // Crée un Plotter pour l'onglet "Test"
     plter, err := plotting.NewPlotter(
         // plotting.WithStyleIdx(0),
         // plotting.WithPointStyle(draw.GlyphStyle{Radius: 1.5, Shape: draw.CircleGlyph{}}),
@@ -55,9 +58,11 @@ func loop() {
     utils.CheckErr(err)
     utils.CheckErr(drawer.AddPlotter(plter))
     
+    // Crée la liste d'onglets
     tabs := []widgets.TabChild{
         widgets.Tabbed("General", generalTab.Layout),
-        widgets.Tabbed("Motor", func(gtx layout.Context) layout.Dimensions {
+        widgets.Tabbed("Motor", generalTab.Layout), // TODO
+        widgets.Tabbed("Test", func(gtx layout.Context) layout.Dimensions {
             return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
                 return layout.UniformInset(unit.Px(10)).Layout(gtx, drawer.Layout)
             })
@@ -77,20 +82,31 @@ func loop() {
     
     for {
         select {
-        case e := <-window.Events():
-            switch e := e.(type) {
-            case system.DestroyEvent:
+        
+        case event := <-window.Events(): // À chaque évènement de l'application
+            // Si le type de l'évènement est...
+            switch e := event.(type) {
+            case system.DestroyEvent: // Fermeture de l'application
                 utils.CheckErr(e.Err)
                 return
-            case system.FrameEvent:
+            case system.FrameEvent: // Nouvelle frame/image générée
+                // Crée le contenu de la prochaine frame
                 gtx := layout.NewContext(ops, e)
                 tabBar.Layout(gtx, tabs...)
+                
+                // Génère la frame (relance une system.FrameEvent)
                 e.Frame(gtx.Ops)
             }
-        case packets := <-chData:
+            
+        case packets := <-chData: // À chaque donnée reçue...
+            // ajoute les données au graphique
             generalTab.Plotters()[views.PltAltitude].AppendAll(packets.AltitudeData())
-        case <-tick.C:
+        
+        // Ce case permet de simuler des données reçues en temps réel
+        case <-tick.C: // À chaque 100 ms...
+            // Ajoute 1 point random à plter
             addRandomPoints(plter, 1)
+            // Log dans la console le nombre de points que plter contient
             log.Infof("Points: %d", plter.Data().Len())
         }
     }
