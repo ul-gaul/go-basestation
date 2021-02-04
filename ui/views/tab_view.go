@@ -1,6 +1,8 @@
 package views
 
 import (
+    "gioui.org/layout"
+    
     "github.com/ul-gaul/go-basestation/ui/plotting"
 )
 
@@ -16,4 +18,5 @@ const (
 type TabView interface {
     Plotters() map[PlotId]*plotting.Plotter
     Drawers() map[PlotId]*plotting.PlotDrawer
+    Layout(gtx layout.Context) layout.Dimensions
 }

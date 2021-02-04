@@ -11,14 +11,17 @@ import (
     "github.com/ul-gaul/go-basestation/utils"
 )
 
-// TODO Documentation
-
 var _ plot.Plotter = (*Plotter)(nil)
 
+// Plotter est une structure qui permet de gérer une liste de données pour un graphique
 type Plotter struct {
+    // Name correspond à la légende
     Name                   string
+    // LineStyle est le style des lignes
     LineStyle              draw.LineStyle
+    // PointStyleFunc est une fonction retournant le style du point spécifié
     PointStyleFunc         func(int) draw.GlyphStyle
+    // DataLimit est la limite de données pouvant être affichées
     DataLimit              int
     xys                    plotter.XYs
     padRatioX, padRatioY   float64
@@ -26,12 +29,16 @@ type Plotter struct {
     mut                    sync.Mutex
 }
 
+// Data retourne la liste des données
 func (p *Plotter) Data() plotter.XYs { return p.xys }
 
+// Prepend ajoute les données spécifiées au début des données existantes
 func (p *Plotter) Prepend(xys ...plotter.XY)       { p.PrependAll(xys) }
 func (p *Plotter) PrependAll(xys plotter.XYs)      { p.InsertAll(0, xys) }
+// Append ajoute les données spécifiées à la fin des données existantes
 func (p *Plotter) Append(xys ...plotter.XY)        { p.AppendAll(xys) }
 func (p *Plotter) AppendAll(xys plotter.XYs)       { p.InsertAll(len(p.xys), xys) }
+// Insert ajoute les données spécifiées à la position spécifiée
 func (p *Plotter) Insert(i int, xys ...plotter.XY) { p.InsertAll(i, xys) }
 func (p *Plotter) InsertAll(i int, xys plotter.XYs) {
     if len(xys) == 0 {
@@ -40,6 +47,7 @@ func (p *Plotter) InsertAll(i int, xys plotter.XYs) {
     p.setXYs(append(p.xys[:i], append(xys, p.xys[i:]...)...))
 }
 
+// ReplaceAll remplace toutes les données par celles spécifiées
 func (p *Plotter) ReplaceAll(xys plotter.XYs) {
     p.setXYs(xys)
 }
@@ -50,6 +58,7 @@ func (p *Plotter) setXYs(xys plotter.XYs) {
     defer p.mut.Unlock()
     
     select {
+    // notifie qu'il y a un changement de données
     case p.chChange <- time.Now():
     default:
     }
@@ -81,6 +90,7 @@ func (p *Plotter) setPadding(x, y float64) error {
 func (p *Plotter) Plot(c draw.Canvas, plt *plot.Plot) {
     var xys plotter.XYs
     
+    // Crée un copie des données à afficher
     p.mut.Lock()
     if p.DataLimit <= 0 || p.xys.Len() < p.DataLimit {
         xys = p.xys[:]
@@ -89,18 +99,21 @@ func (p *Plotter) Plot(c draw.Canvas, plt *plot.Plot) {
     }
     p.mut.Unlock()
     
+    // Crée une nouvelle ligne avec points représentant les points à afficher
     line, points, err := plotter.NewLinePoints(xys)
     utils.CheckErr(err)
     
+    // Applique les styles
     line.LineStyle = p.LineStyle
     points.GlyphStyleFunc = p.PointStyleFunc
     
+    // Recalcule les axes
     xmin, xmax, ymin, ymax := utils.FindMinMax(xys...)
     xpad, ypad := p.padRatioX*(xmax-xmin), p.padRatioY*(ymax-ymin)
     plt.X.Min, plt.X.Max = xmin-xpad, xmax+xpad
     plt.Y.Min, plt.Y.Max = ymin-ypad, ymax+ypad
     
-    
+    // Dessine le graphique sur le canvas c
     line.Plot(c, plt)
     points.Plot(c, plt)
 }

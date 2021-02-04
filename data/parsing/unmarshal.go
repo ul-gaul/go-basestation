@@ -16,6 +16,7 @@ func UnmarshalParser() (ISerialPacketParser, error) {
         order = binary.BigEndian
     }
     
+    // FIXME
     size := unsafe.Sizeof(packet.RocketPacket{})
     if size < 0 {
         return nil, errors.New("invalid byte size of RocketPacket")

@@ -22,18 +22,21 @@ func NewCsvPacketReader(reader io.Reader) *CsvPacketReader {
     return &CsvPacketReader{decoder}
 }
 
+// Read reads the next packet.
 func (cr *CsvPacketReader) Read() (packet.RocketPacket, error) {
     var pkt packet.RocketPacket
     err := cr.Decode(&pkt)
     return pkt, err
 }
 
+// ReadAll reads all the data.
 func (cr *CsvPacketReader) ReadAll() ([]packet.RocketPacket, error) {
     var packets []packet.RocketPacket
     err := cr.Decode(&packets)
     return packets, err
 }
 
+// ReadCsv reads a CSV file and returns a list of packet.RocketPacket
 func ReadCsv(csvPath string) ([]packet.RocketPacket, error) {
     file, err := os.Open(csvPath)
     if err != nil { return nil, err }
@@ -50,10 +53,12 @@ func NewCsvPacketWriter(writer io.Writer) *CsvPacketWriter {
     return &CsvPacketWriter{csvutil.NewEncoder(csv.NewWriter(writer))}
 }
 
+// Write writes the specified packet
 func (cw *CsvPacketWriter) Write(pkt packet.RocketPacket) error {
     return cw.Encode(pkt)
 }
 
+// WriteAll writes all the specified packets
 func (cw *CsvPacketWriter) WriteAll(packets []packet.RocketPacket) error {
     return cw.Encode(packets)
 }
