@@ -1,80 +1,97 @@
 package packet
 
-// Direction représente la direction par rapport aux axes/pôles magnétiques
-type Direction string
-
-const (
-    North Direction = "N"
-    South Direction = "S"
-    East  Direction = "E"
-    West  Direction = "W"
+import (
+	"github.com/ul-gaul/go-basestation/data/packet/state"
+	"time"
 )
 
-// Vector représente une coordonnée ou direction/vecteur tridimensionnelle
+// Vector represents a 3D vector or coordinates on a 3D plan.
 type Vector struct {
-    X float64 `csv:"x"`
-    Y float64 `csv:"y"`
-    Z float64 `csv:"z"`
+	X float32 `csv:"x"`
+	Y float32 `csv:"y"`
+	Z float32 `csv:"z"`
 }
 
-// State représente un état (actif/inactif)
-type State uint
+type VoltagePSI float32
 
-const (
-    On  State = 1
-    Off State = 0
-)
-
-// SystemStates contient l'état des composantes de la fusée
-type SystemStates struct {
-    AcquisitionBoard1 State `csv:"acquisition_board_state_1"`
-    AcquisitionBoard2 State `csv:"acquisition_board_state_2"`
-    AcquisitionBoard3 State `csv:"acquisition_board_state_3"`
-    PowerSupply1      State `csv:"power_supply_state_1"`
-    PowerSupply2      State `csv:"power_supply_state_2"`
-    PayloadBoard1     State `csv:"payload_board_state_1"`
+// PSI transforms the voltage to PSI. // [0;5] => [0;1000]
+func (v VoltagePSI) PSI() float32 {
+	return float32(v) * 200
 }
 
-// RocketPacket représente un paquet de données reçu de la fusée.
+type Milliseconds uint64
+
+func (ms Milliseconds) Duration() time.Duration {
+	return time.Duration(ms) * time.Millisecond
+}
+
+// RocketPacket represents a packet of data received from the rocket.
 //
-// NOTE: Les champs doivent être dans la même ordre que les données reçues
+// NOTE: The fields/properties of the struct must be in the same order as the binary data received.
 type RocketPacket struct {
-    // Time est le temps écoulé en millisecondes (ms) depuis le démarrage ?? FIXME
-    Time uint64 `csv:"time_stamp"`
-    
-    // Latitude GPS en degrés
-    Latitude float64 `csv:"latitude"`
-    
-    // Longitude GPS en degrés
-    Longitude float64 `csv:"longitude"`
-    
-    // IndicatorNS est la direction nord/sud
-    IndicatorNS Direction `csv:"ns_indicator"`
-    
-    // IndicatorEW est la direction est/ouest
-    IndicatorEW Direction `csv:"ew_indicator"`
-    
-    // GpsSatellites est le nombre de satellites auxquels le GPS est connecté
-    GpsSatellites uint8 `csv:"gps_satellites"`
-    
-    // Altitude en mètre (m)
-    Altitude float64 `csv:"altitude"`
-    
-    // Pressure est la pression en Pascal (p)
-    Pressure float64 `csv:"pressure"`
-    
-    // Temperature en degrés Celsius (°C)
-    Temperature float64 `csv:"temperature"`
-    
-    // Acceleration est la force gravitationnelle subit en g
-    Acceleration Vector `csv:"acceleration_,inline"`
-    
-    // Magnetism en millitesla (mT)
-    Magnetism Vector `csv:"magnetometer_,inline"`
-    
-    // AngularSpeed est la vitesse angulaire en radian par seconde
-    AngularSpeed Vector `csv:"angular_speed_,inline"`
-    
-    // States est l'état des systèmes
-    States SystemStates
+
+	// Time is the number of milliseconds since start
+	Time Milliseconds `csv:"time"`
+
+	State state.State `csv:"state"`
+
+	// Temperature is in Celsius (°C). // [-30; 45]
+	Temperature float32 `csv:"temperature"`
+
+	// Humidity is a percentage. // [0; 100]
+	Humidity float32 `csv:"humidity"`
+
+	// AtmosPressure is in Pascal (Pa). // [0-101325]
+	AtmosPressure int32 `csv:"atmos_pressure"`
+
+	// Altitude is in meters (m)
+	Altitude float32 `csv:"altitude"`
+
+	// Latitude is the GPS latitude in degree. // [-90;90]
+	Latitude float32 `csv:"latitude"`
+
+	// Longitude is the GPS longitude in degree. // [-180;180]
+	Longitude float32 `csv:"longitude"`
+
+	// Satellites is the number of GPS satellites the rocket is connected to.
+	Satellites uint8 `csv:"nb_sat"`
+
+	// Acceleration is the gravitationnal force experienced by the rocket in g (or m/s²).
+	Acceleration Vector `csv:"accel_,inline"`
+
+	// AngularVelocity is the angular speed of the rocket in radian per seconds.
+	AngularVelocity Vector `csv:"angular_speed_,inline"`
+
+	// Orientation is the pitch, roll and yaw of the rocket
+	Orientation Vector `csv:"orient_,inline"`
+
+	// Magnetism is in millitesla (mT)
+	Magnetism Vector `csv:"magnet_,inline"`
+
+	Voltages `csv:"v_,inline"`
+
+	TestBench `csv:"test_,inline"`
+}
+
+type TestBench struct {
+	LoadCell float32 `csv:"load"`
+
+	// Temperature1 in Celsius (°C) // [0;600]
+	Temperature1 float32 `csv:"temp1"`
+
+	// Temperature2 in Celsius (°C) // [0;600]
+	Temperature2 float32 `csv:"temp2"`
+
+	// Temperature3 in Celsius (°C) // [0;600]
+	Temperature3 float32 `csv:"temp3"`
+}
+
+type Voltages struct {
+	Rocket      float32    `csv:"rocket"`       // [0;15]
+	Tower       float32    `csv:"tower"`        // [0;15]
+	IgnitionBox float32    `csv:"ignition_box"` // [0;15]
+	Item3       VoltagePSI `csv:"item3"`        // [0;5]
+	Item17      VoltagePSI `csv:"item17"`       // [0;5]
+	Item18      VoltagePSI `csv:"item18"`       // [0;5]
+	Item19      VoltagePSI `csv:"item19"`       // [0;5]
 }

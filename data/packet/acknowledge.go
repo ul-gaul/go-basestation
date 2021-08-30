@@ -1,13 +1,13 @@
 package packet
 
-type Acknowledge uint8
+type AcknowledgeResult uint8
 
 const (
-    AckSuccess Acknowledge = 0x01
-    AckFailure Acknowledge = 0xFF
+	AckSuccess AcknowledgeResult = 0x01
+	AckFailure AcknowledgeResult = 0xFF
 )
 
 type AcknowledgePacket struct {
-    Id  uint16
-    Ack Acknowledge
+	Id     uint16
+	Result AcknowledgeResult
 }

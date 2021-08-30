@@ -1,33 +1,22 @@
 module github.com/ul-gaul/go-basestation
 
-go 1.14
+go 1.16
 
 require (
-	gioui.org v0.0.0-20201220090421-18d4dbf60c4f
-	github.com/ajstarks/svgo v0.0.0-20200725142600-7a3c8b57fecb // indirect
-	github.com/disintegration/imaging v1.6.2
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/jszwec/csvutil v1.4.0
-	github.com/magiconair/properties v1.8.4 // indirect
+	gioui.org v0.0.0-20210813062522-71c5a134d700
+	github.com/brianvoe/gofakeit/v6 v6.7.0
+	github.com/go-fonts/dejavu v0.1.0
+	github.com/go-fonts/liberation v0.2.0
+	github.com/jszwec/csvutil v1.5.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/mitchellh/mapstructure v1.4.0 // indirect
-	github.com/panjf2000/ants/v2 v2.4.3
-	github.com/pelletier/go-toml v1.8.1 // indirect
+	github.com/panjf2000/ants/v2 v2.4.6
 	github.com/sigurn/crc16 v0.0.0-20160107003519-da416fad5162
 	github.com/sigurn/utils v0.0.0-20190728110027-e1fefb11a144 // indirect
-	github.com/sirupsen/logrus v1.7.0
-	github.com/spf13/afero v1.5.1 // indirect
-	github.com/spf13/cast v1.3.1 // indirect
-	github.com/spf13/cobra v1.1.1
-	github.com/spf13/jwalterweatherman v1.1.0 // indirect
-	github.com/spf13/viper v1.7.1
-	github.com/stretchr/testify v1.5.1
-	go.bug.st/serial v1.1.1
-	golang.org/x/exp v0.0.0-20201215153530-b5a6e247da10 // indirect
-	golang.org/x/image v0.0.0-20201208152932-35266b937fa6 // indirect
-	golang.org/x/sys v0.0.0-20201218084310-7d0127a74742 // indirect
-	golang.org/x/text v0.3.4 // indirect
-	gonum.org/v1/plot v0.8.1
-	gopkg.in/ini.v1 v1.62.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	github.com/sirupsen/logrus v1.8.1
+	github.com/spf13/cobra v1.2.1
+	github.com/spf13/viper v1.8.1
+	github.com/sqweek/dialog v0.0.0-20210702151303-c326b49d3f01
+	github.com/wcharczuk/go-chart/v2 v2.1.0
+	go.bug.st/serial v1.3.1
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )

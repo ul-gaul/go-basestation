@@ -42,5 +42,6 @@
 # Others
 temp.go
 
-
+gaul-config.yaml
 bin/
+output/

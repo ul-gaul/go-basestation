@@ -1,0 +1,54 @@
+
+# Paramètres reliés aux communications
+Comms:
+
+  Acknowledge:
+    # Temps maximum d'attente du acknowledge des commandes (Voir time.parseDuration)
+    Timeout: 30s
+    # Limite de paquets Acknowledge consecutifs perdus (panic si atteint)
+    LossThreshold: 20
+    # La capacité du buffer du channel de réception des paquets Acknowledge
+    BufferSize: 5
+
+
+  RocketPacket:
+    # Limite de paquets RocketPacket consecutifs perdus (panic si atteint)
+    LossThreshold: 5
+    # La capacité du buffer du channel de réception des paquets RocketPacket
+    BufferSize: 64
+
+
+  Serial:
+    BaudRate: 115200
+    DataBits: 8
+
+    # Valeurs possibles:
+    #   0 - serial.NoParity (default)
+    #   1 - serial.OddParity
+    #   2 - serial.EvenParity
+    #   3 - serial.MarkParity
+    #   4 - serial.SpaceParity
+    Parity: 0
+
+    # Valeurs possibles:
+    #   0 - serial.OneStopBit (default)
+    #   1 - serial.OnePointFiveStopBits
+    #   2 - serial.TwoStopBits
+    StopBits: 0
+
+  # ByteOrder: LittleEndian / BigEndian (default: false)
+  UseBigEndian: false
+
+
+# Paramètres reliés aux éléments de l'interface
+Frontend:
+  ShowFPS: false
+  ShowTPS: false
+
+  DataRoller:
+    MinTimeGap: 50ms
+    Limit: 100
+
+  Graph:
+    BaseWidth: 1024
+    Scale: 1.0
