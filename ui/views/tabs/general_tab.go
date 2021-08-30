@@ -2,6 +2,7 @@ package tabs
 
 import (
     "gioui.org/layout"
+    "gioui.org/op"
     "gioui.org/unit"
     "github.com/ul-gaul/go-basestation/data/packet"
     "github.com/ul-gaul/go-basestation/pool"
@@ -94,6 +95,7 @@ func (tab *GeneralTab) Draw(gtx layout.Context) layout.Dimensions {
     // fonction qui retourne le layout du graphique spécifié
     flexedChart := func(id GraphID) layout.FlexChild {
         return layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+            op.InvalidateOp{}.Add(gtx.Ops)
             return layout.UniformInset(unit.Px(10)).Layout(gtx, tab.graphs[id].Draw)
         })
     }

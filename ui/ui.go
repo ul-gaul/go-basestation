@@ -26,7 +26,9 @@ func Draw(gtx layout.Context, fps, tps int) layout.Dimensions {
 	// Uncomment to print the size of the window
 	// log.Printf("Size: %+v\n", gtx.Constraints.Max.Div(int(gtx.Metric.PxPerDp)))
 	
-	var children []layout.StackChild
+	children := []layout.StackChild{
+		layout.Stacked(views.CurrentView.Draw),
+	}
 	
 	if cfg.Frontend.ShowFPS || cfg.Frontend.ShowTPS {
 		children = append(children, layout.Expanded(func(gtx layout.Context) layout.Dimensions {
@@ -49,11 +51,6 @@ func Draw(gtx layout.Context, fps, tps int) layout.Dimensions {
 			return txt.Layout(gtx)
 		}))
 	}
-	
-	children = append(children, layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-		defer op.Save(gtx.Ops).Load()
-		return views.CurrentView.Draw(gtx)
-	}))
 	
 	if menu.Visible {
 		children = append(children, layout.Expanded(menu.Draw))
